@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:18
 
 WORKDIR /app
 
@@ -6,9 +6,13 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-RUN npm run build
-# Ensure database is migrated or generated
+
+# Generate Prisma client first
 RUN npx prisma generate
 
-EXPOSE 3001
+# Then build TypeScript
+RUN npm run build
+
+EXPOSE 10000
+
 CMD ["npm", "start"]

@@ -53,15 +53,20 @@ export const verifyRefreshToken = (token: string): { userId: string } => {
 };
 
 // ============= OTP UTILITIES =============
-export const generateOTP = (): string => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+export const generateOTP = (): number => {
+  return Math.floor(100000 + Math.random() * 900000);
 };
 
-export const createOTP = async (userId: string, phone: string): Promise<{ otp: string; expiresAt: Date }> => {
-  const otp = generateOTP();
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+// Create OTP
+export const createOTP = async (
+  userId: string,
+  phone: string
+): Promise<{ otp: number; expiresAt: Date }> => {
 
-  // Delete any existing OTPs for this user
+  const otp = generateOTP();
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+  // Delete existing OTPs
   await prisma.oTP.deleteMany({
     where: { userId },
   });
@@ -79,7 +84,12 @@ export const createOTP = async (userId: string, phone: string): Promise<{ otp: s
   return { otp, expiresAt };
 };
 
-export const verifyOTP = async (userId: string, otp: string): Promise<boolean> => {
+// Verify OTP
+export const verifyOTP = async (
+  userId: string,
+  otp: number
+): Promise<boolean> => {
+
   const otpRecord = await prisma.oTP.findFirst({
     where: { userId, otp },
   });
@@ -88,14 +98,13 @@ export const verifyOTP = async (userId: string, otp: string): Promise<boolean> =
     return false;
   }
 
-  // Check if OTP expired
+  // Check expiration
   if (new Date() > otpRecord.expiresAt) {
-    // Delete expired OTP
     await prisma.oTP.delete({ where: { id: otpRecord.id } });
     return false;
   }
 
-  // Delete OTP after verification
+  // Delete OTP after successful verification
   await prisma.oTP.delete({ where: { id: otpRecord.id } });
 
   return true;
@@ -258,30 +267,42 @@ export const loginWithEmail = async (
 };
 
 // ============= PHONE LOGIN (OTP) =============
-export const sendPhoneOTP = async (phone: string): Promise<{ otp: string; expiresAt: Date }> => {
+export const sendPhoneOTP = async (
+  phone: string
+): Promise<{ otp: number; expiresAt: Date }> => {
+
   if (!validatePhone(phone)) {
-    throw new Error('Invalid phone format');
+    throw new Error("Invalid phone format");
   }
 
-  // Find or create user by phone
-  let user = await prisma.user.findUnique({
+  // Find user by phone
+  const user = await prisma.user.findUnique({
     where: { phone },
   });
 
   if (!user) {
-    throw new Error('Phone number not registered');
+    throw new Error("Phone number not registered");
   }
 
   // Generate and store OTP
   return createOTP(user.id, phone);
 };
 
+
+
 export const verifyPhoneOTP = async (
   phone: string,
   otp: string
-): Promise<{ userId: string; name: string; age: number; email: string | null; phone: string }> => {
+): Promise<{
+  userId: string;
+  name: string;
+  age: number;
+  email: string | null;
+  phone: string;
+}> => {
+
   if (!validatePhone(phone)) {
-    throw new Error('Invalid phone format');
+    throw new Error("Invalid phone format");
   }
 
   const user = await prisma.user.findUnique({
@@ -289,13 +310,14 @@ export const verifyPhoneOTP = async (
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
-  const isOTPValid = await verifyOTP(user.id, otp);
+  // Convert OTP string → number
+  const isOTPValid = await verifyOTP(user.id, Number(otp));
 
   if (!isOTPValid) {
-    throw new Error('Invalid or expired OTP');
+    throw new Error("Invalid or expired OTP");
   }
 
   // Mark user as verified
@@ -309,10 +331,9 @@ export const verifyPhoneOTP = async (
     name: user.name,
     age: user.age,
     email: user.email,
-    phone: user.phone || '',
+    phone: user.phone || "",
   };
 };
-
 // ============= TOKEN REFRESH =============
 export const refreshAccessToken = (refreshToken: string): string => {
   const decoded = verifyRefreshToken(refreshToken);

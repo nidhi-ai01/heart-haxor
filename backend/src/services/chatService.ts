@@ -158,7 +158,7 @@ Rules:
             content: systemPrompt
         },
 
-        ...chat.messages.map((msg) => ({
+        ...chat.messages.map((msg: any) => ({
             role: msg.role as "user" | "assistant",
             content: msg.content
         })),
