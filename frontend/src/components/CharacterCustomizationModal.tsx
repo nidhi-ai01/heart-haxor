@@ -96,7 +96,7 @@ export default function CharacterCustomizationModal({
       }
 
       const response = await fetch(
-        `http://localhost:3001/api/upload/character-image/${characterId}`,
+        `http://${process.env.NEXT_PUBLIC_API_URL}/api/upload/character-image/${characterId}`,
         {
           method: 'POST',
           headers: {

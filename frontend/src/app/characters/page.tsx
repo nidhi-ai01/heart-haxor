@@ -77,62 +77,43 @@ if (!charsRes.ok) {
 }
 
 const charsData = await charsRes.json();
-          
-          // Try to fetch user customizations
-          try {
-            const customRes = await fetch("http://localhost:3001/api/chatbot-settings", { headers });
-            if (customRes.ok) {
-              const customizations = await customRes.json();
-              
-              // Create a map of character ID to customization
-              const customMap = new Map();
-              customizations.forEach((custom: any) => {
-                customMap.set(custom.characterId, custom);
-              });
-              
-              // Merge customizations with characters
-              const mergedData = charsData.map((char: any) => {
-                const custom = customMap.get(char.id);
-                return {
-                  ...char,
-                  name: custom?.customName || char.name,
-                  imageUrl: custom?.customImageUrl || char.imageUrl,
-                  isCustomized: !!(custom?.customName || custom?.customImageUrl)
-                };
-              });
-              
-              setCharacters(mergedData);
-            } else {
-              // No customizations found, use defaults
-              setCharacters(charsData);
-            }
-          } catch (customErr) {
-            console.warn("Could not fetch customizations, using defaults");
-            setCharacters(charsData);
-          }
-        } else {
-          // Not authenticated, fetch defaults
-          const res = await fetch(url);
-          if (!res.ok) {
-            throw new Error("Failed to fetch characters");
-          }
-          const data = await res.json();
-          setCharacters(data);
-        }
-        
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching characters:", err);
-        setError("Failed to load characters. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    if (selectedRole) {
-      fetchCharacters();
-    }
-  }, [selectedRole]);
+// Try to fetch user customizations
+try {
+  const customRes = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/chatbot-settings`,
+    { headers }
+  );
+
+  if (customRes.ok) {
+    const customizations = await customRes.json();
+
+    const customMap = new Map();
+    customizations.forEach((custom: any) => {
+      customMap.set(custom.characterId, custom);
+    });
+
+    const mergedData = charsData.map((char: any) => {
+      const custom = customMap.get(char.id);
+
+      return {
+        ...char,
+        name: custom?.customName || char.name,
+        imageUrl: custom?.customImageUrl || char.imageUrl,
+        isCustomized: !!(custom?.customName || custom?.customImageUrl)
+      };
+    });
+
+    setCharacters(mergedData);
+
+  } else {
+    setCharacters(charsData);
+  }
+
+} catch (customErr) {
+  console.warn("Could not fetch customizations, using defaults");
+  setCharacters(charsData);
+}
 
   // Filter characters by role
   useEffect(() => {

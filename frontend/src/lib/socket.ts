@@ -1,8 +1,10 @@
 import { io } from "socket.io-client";
 
-// Connect to the backend server
-const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001", {
-    autoConnect: true,
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001";
+
+const socket = io(SOCKET_URL, {
+  autoConnect: true,
+  transports: ["websocket"],
 });
 
 export default socket;

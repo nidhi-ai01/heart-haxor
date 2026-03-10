@@ -82,7 +82,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                 // Try to fetch customized character data if authenticated
                 if (token) {
                     try {
-                        const res = await fetch(`http://localhost:3001/api/chatbot-settings/${characterId}`, {
+                        const res = await fetch(`http://${process.env.NEXT_PUBLIC_API_URL}/api/chatbot-settings/${characterId}`, {
                             headers: {
                                 'Authorization': `Bearer ${token}`,
                                 'Content-Type': 'application/json'
@@ -103,7 +103,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                 }
                 
                 // Fallback: Fetch default character data
-                const res = await fetch(`http://localhost:3001/api/characters/${characterId}`);
+                const res = await fetch(`http://${process.env.NEXT_PUBLIC_API_URL}/api/characters/${characterId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setCharacter(data);
@@ -137,12 +137,15 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                 }
 
                 // Fetch or create chat with character
-                const res = await fetch(`http://localhost:3001/api/chats/${characterId}/with-character`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
+const res = await fetch(
+  `${process.env.NEXT_PUBLIC_API_URL}/api/chats/${characterId}/with-character`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  }
+);
 
                 if (res.ok) {
                     const data = await res.json();
