@@ -7,10 +7,13 @@ RUN npm install
 
 COPY . .
 
-# Generate Prisma client first
+# Generate Prisma client
 RUN npx prisma generate
 
-# Then build TypeScript
+# Create database tables
+RUN npx prisma db push
+
+# Build TypeScript
 RUN npm run build
 
 EXPOSE 10000
