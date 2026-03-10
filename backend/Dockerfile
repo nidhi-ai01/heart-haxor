@@ -10,15 +10,9 @@ COPY . .
 # Generate Prisma client
 RUN npx prisma generate
 
-# Create database tables
-RUN npx prisma db push
-
-# Seed default characters
-RUN npm run seed
-
 # Build TypeScript
 RUN npm run build
 
 EXPOSE 10000
 
-CMD ["npm", "start"]
+CMD sh -c "npx prisma db push && npm run seed && npm start"
