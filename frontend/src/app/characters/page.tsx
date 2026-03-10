@@ -67,11 +67,16 @@ const headers: HeadersInit = {
           headers['Authorization'] = `Bearer ${token}`;
           
           // Fetch default characters first
-          const charsRes = await fetch("http://localhost:3001/api/characters", { headers });
-          if (!charsRes.ok) {
-            throw new Error("Failed to fetch characters");
-          }
-          const charsData = await charsRes.json();
+const charsRes = await fetch(
+  `${process.env.NEXT_PUBLIC_API_URL}/api/characters`,
+  { headers }
+);
+
+if (!charsRes.ok) {
+  throw new Error("Failed to fetch characters");
+}
+
+const charsData = await charsRes.json();
           
           // Try to fetch user customizations
           try {
