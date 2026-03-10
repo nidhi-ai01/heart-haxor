@@ -56,10 +56,11 @@ export default function CharactersPage() {
         setLoading(true);
         const token = localStorage.getItem('accessToken');
         
-        let url = "http://localhost:3001/api/characters";
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json'
-        };
+        let url = `${process.env.NEXT_PUBLIC_API_URL}/api/characters`;
+
+const headers: HeadersInit = {
+  'Content-Type': 'application/json'
+};
         
         // If authenticated, fetch all characters and then get customizations
         if (token) {
