@@ -1,6 +1,11 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://${process.env.NEXT_PUBLIC_API_URL}/api';
+const res = await fetch(`${API_URL}/api/chats/${characterId}/with-character`, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  },
+});
 
 interface TokenResponse {
   success: boolean;
