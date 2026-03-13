@@ -204,8 +204,7 @@ export default function CharactersPage() {
                   Choose Your Companion
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400 mt-2 capitalize">
-                  {selectedRole} Mode • {filteredCharacters.length} character
-                  {filteredCharacters.length !== 1 ? "s" : ""} available
+                  {selectedRole} Mode • {filteredCharacters.length} character{filteredCharacters.length !== 1 ? "s" : ""} available
                 </p>
               </div>
             </div>
@@ -247,11 +246,7 @@ export default function CharactersPage() {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               No companions found for this mode. Try another role.
             </p>
-            <Button
-              onClick={handleBackToRole}
-              variant="primary"
-              size="lg"
-            >
+            <Button onClick={handleBackToRole} variant="primary" size="lg">
               Choose Another Mode
             </Button>
           </div>
@@ -274,7 +269,6 @@ export default function CharactersPage() {
                     : "bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-2xl hover:shadow-purple-300/50 dark:hover:shadow-purple-900/50 border border-white/60 dark:border-slate-700/50 flex items-center gap-6"
                 )}
               >
-                {/* Character Image */}
                 <div
                   className={clsx(
                     viewMode === "grid" ? "w-full h-64 relative overflow-hidden" : "w-24 h-24 flex-shrink-0 relative"
@@ -298,12 +292,10 @@ export default function CharactersPage() {
                         character.name[0];
                     }}
                   />
-                  {/* Overlay */}
                   {viewMode === "grid" && (
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   )}
 
-                  {/* Settings Button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -316,7 +308,6 @@ export default function CharactersPage() {
                   </button>
                 </div>
 
-                {/* Character Info */}
                 <div className={viewMode === "grid" ? "p-4" : "flex-1"}>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                     {character.name}
@@ -331,7 +322,6 @@ export default function CharactersPage() {
                     </p>
                   )}
 
-                  {/* Role Badge */}
                   <div className="flex items-center justify-between gap-3">
                     <span
                       className={clsx(
@@ -346,7 +336,6 @@ export default function CharactersPage() {
                       {character.role}
                     </span>
 
-                    {/* Chat Button - Using Button Component */}
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -367,17 +356,15 @@ export default function CharactersPage() {
         )}
       </div>
 
-      {/* Character Customization Modal */}
       {customizingCharacterId && (
         <CharacterCustomizationModal
           isOpen={Boolean(customizingCharacterId)}
           characterId={customizingCharacterId}
-          characterName={characters.find(c => c.id === customizingCharacterId)?.name || "Character"}
-          characterImage={characters.find(c => c.id === customizingCharacterId)?.imageUrl || ""}
+          characterName={characters.find((c) => c.id === customizingCharacterId)?.name || "Character"}
+          characterImage={characters.find((c) => c.id === customizingCharacterId)?.imageUrl || ""}
           onClose={() => setCustomizingCharacterId(null)}
         />
       )}
     </div>
   );
-}
 }
