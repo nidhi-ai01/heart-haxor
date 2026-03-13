@@ -110,10 +110,14 @@ export default function CharactersPage() {
             console.warn("Could not fetch customizations, using defaults");
             setCharacters(charsData);
           }
+        } else {
+          const res = await fetch(url);
+          const data = await res.json();
+          setCharacters(data);
         }
       } catch (error) {
         console.error("Error fetching characters:", error);
-        setError(error instanceof Error ? error.message : "Failed to fetch characters");
+        setError(error instanceof Error ? error.message : "Failed to load characters");
       } finally {
         setLoading(false);
       }
