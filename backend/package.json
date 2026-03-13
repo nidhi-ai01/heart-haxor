@@ -3,21 +3,19 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  
+  "type": "module",
   "scripts": {
-  "dev": "tsx watch src/server.ts",
-  "build": "echo build skipped",
-  "start": "tsx src/server.ts"
-}
-  
-
-  {
+    "dev": "tsx watch src/server.ts",
+    "build": "echo build skipped",
+    "start": "tsx src/server.ts",
+    "seed": "tsx src/seeds/seedCharacters.ts"
+  },
+  "prisma": {
     "schema": "prisma/schema.prisma"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "axios": "^1.13.2",
