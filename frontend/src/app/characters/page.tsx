@@ -56,64 +56,71 @@ export default function CharactersPage() {
         setLoading(true);
         const token = localStorage.getItem('accessToken');
         
-        let url = `${process.env.NEXT_PUBLIC_API_URL}/api/characters`;
-
-const headers: HeadersInit = {
-  'Content-Type': 'application/json'
-};
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json'
+        };
         
         // If authenticated, fetch all characters and then get customizations
         if (token) {
           headers['Authorization'] = `Bearer ${token}`;
           
           // Fetch default characters first
-const charsRes = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL}/api/characters`,
-  { headers }
-);
+          const charsRes = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/characters`,
+            { headers }
+          );
 
-if (!charsRes.ok) {
-  throw new Error("Failed to fetch characters");
-}
+          if (!charsRes.ok) {
+            throw new Error("Failed to fetch characters");
+          }
 
-const charsData = await charsRes.json();
+          const charsData = await charsRes.json();
 
-// Try to fetch user customizations
-try {
-  const customRes = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/chatbot-settings`,
-    { headers }
-  );
+          // Try to fetch user customizations
+          try {
+            const customRes = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/chatbot-settings`,
+              { headers }
+            );
 
-  if (customRes.ok) {
-    const customizations = await customRes.json();
+            if (customRes.ok) {
+              const customizations = await customRes.json();
 
-    const customMap = new Map();
-    customizations.forEach((custom: any) => {
-      customMap.set(custom.characterId, custom);
-    });
+              const customMap = new Map();
+              customizations.forEach((custom: any) => {
+                customMap.set(custom.characterId, custom);
+              });
 
-    const mergedData = charsData.map((char: any) => {
-      const custom = customMap.get(char.id);
+              const mergedData = charsData.map((char: any) => {
+                const custom = customMap.get(char.id);
 
-      return {
-        ...char,
-        name: custom?.customName || char.name,
-        imageUrl: custom?.customImageUrl || char.imageUrl,
-        isCustomized: !!(custom?.customName || custom?.customImageUrl)
-      };
-    });
+                return {
+                  ...char,
+                  name: custom?.customName || char.name,
+                  imageUrl: custom?.customImageUrl || char.imageUrl,
+                  isCustomized: !!(custom?.customName || custom?.customImageUrl)
+                };
+              });
 
-    setCharacters(mergedData);
+              setCharacters(mergedData);
+            } else {
+              setCharacters(charsData);
+            }
+          } catch (customErr) {
+            console.warn("Could not fetch customizations, using defaults");
+            setCharacters(charsData);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching characters:", error);
+        setError(error instanceof Error ? error.message : "Failed to fetch characters");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  } else {
-    setCharacters(charsData);
-  }
-
-} catch (customErr) {
-  console.warn("Could not fetch customizations, using defaults");
-  setCharacters(charsData);
-}
+    fetchCharacters();
+  }, []);
 
   // Filter characters by role
   useEffect(() => {
@@ -365,4 +372,4 @@ try {
       )}
     </div>
   );
-}
+} 
