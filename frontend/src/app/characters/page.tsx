@@ -196,6 +196,7 @@ export default function CharactersPage() {
               <button
                 onClick={handleBackToRole}
                 className="p-2 hover:bg-purple-100/60 dark:hover:bg-purple-900/40 rounded-full transition-colors duration-300 text-gray-700 dark:text-gray-300"
+                aria-label="Go back to role selection"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -217,6 +218,7 @@ export default function CharactersPage() {
                     ? "bg-violet-400 dark:bg-violet-500 text-white shadow-lg"
                     : "hover:bg-purple-100/60 dark:hover:bg-purple-900/40 text-gray-700 dark:text-gray-300"
                 )}
+                aria-label="Switch to grid view"
               >
                 <Grid3x3 className="w-5 h-5" />
               </button>
@@ -228,6 +230,7 @@ export default function CharactersPage() {
                     ? "bg-violet-400 dark:bg-violet-500 text-white shadow-lg"
                     : "hover:bg-purple-100/60 dark:hover:bg-purple-900/40 text-gray-700 dark:text-gray-300"
                 )}
+                aria-label="Switch to list view"
               >
                 <Grid2x2 className="w-5 h-5" />
               </button>
