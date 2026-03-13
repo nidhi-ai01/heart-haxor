@@ -103,6 +103,7 @@ export default function CharactersPage() {
               });
 
               setCharacters(mergedData);
+              
             } else {
               setCharacters(charsData);
             }
@@ -111,7 +112,9 @@ export default function CharactersPage() {
             setCharacters(charsData);
           }
         } else {
-          const res = await fetch(url);
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/characters`
+          );
           const data = await res.json();
           setCharacters(data);
         }
