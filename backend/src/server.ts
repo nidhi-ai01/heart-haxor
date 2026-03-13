@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
@@ -47,7 +47,7 @@ io.on('connection', (socket) => {
     });
 });
 
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
     res.json({ status: 'ok', service: 'Heart Haxor Backend' });
 });
 
