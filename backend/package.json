@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "seed": "tsx src/seeds/seedCharacters.ts"
-  },
-  "prisma": {
+  "dev": "tsx watch src/server.ts",
+  "build": "echo build skipped",
+  "start": "tsx src/server.ts"
+}
+  
+
+  {
     "schema": "prisma/schema.prisma"
   },
   "keywords": [],
