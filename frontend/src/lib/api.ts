@@ -249,19 +249,15 @@ export const chatbotSettingsAPI = {
   },
 };
 
-export default apiClient;
-
-  ) => {
+export const chatbotSettingsAPI = {
+  updateSettings: async (characterId: string, data: any) => {
     const response = await apiClient.put(`/chatbot-settings/${characterId}`, data);
     return response.data;
-  },
-
-  // Delete customization
-  deleteCustomization: async (characterId: string) => {
-    const response = await apiClient.delete(`/chatbot-settings/${characterId}`);
-    return response.data;
-  },
+  }
 };
+
+export default apiClient;
+
 
 // ============= ERROR HANDLING =============
 
