@@ -1,11 +1,6 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
-const res = await fetch(`${API_URL}/api/chats/${characterId}/with-character`, {
-  headers: {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  },
-});
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 interface TokenResponse {
   success: boolean;
@@ -242,6 +237,20 @@ export const chatbotSettingsAPI = {
   updateCustomization: async (
     characterId: string,
     data: { customName?: string; customImageUrl?: string }
+  ) => {
+    const response = await apiClient.put(`/chatbot-settings/${characterId}`, data);
+    return response.data;
+  },
+
+  // Delete customization
+  deleteCustomization: async (characterId: string) => {
+    const response = await apiClient.delete(`/chatbot-settings/${characterId}`);
+    return response.data;
+  },
+};
+
+export default apiClient;
+
   ) => {
     const response = await apiClient.put(`/chatbot-settings/${characterId}`, data);
     return response.data;
