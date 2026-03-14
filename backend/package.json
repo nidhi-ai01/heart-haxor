@@ -4,12 +4,14 @@
 "description": "Heart Haxor backend server",
 "main": "src/server.ts",
 "type": "module",
+
 "scripts": {
-"dev": "tsx watch src/server.ts",
-"build": "echo build skipped",
-"start": "tsx src/server.ts",
-"seed": "tsx src/seeds/seedCharacters.ts"
-},
+  "dev": "tsx watch src/server.ts",
+  "build": "echo build skipped",
+  "start": "tsx src/server.ts",
+  "seed": "tsx src/seeds/seedCharacters.ts",
+  "postinstall": "npm run seed"
+}
 "prisma": {
 "schema": "prisma/schema.prisma"
 },
