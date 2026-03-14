@@ -249,7 +249,6 @@ export const chatbotSettingsAPI = {
   },
 };
 
-export default apiClient;
 
 
 // ============= ERROR HANDLING =============
