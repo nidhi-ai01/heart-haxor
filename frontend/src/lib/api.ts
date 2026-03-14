@@ -249,13 +249,6 @@ export const chatbotSettingsAPI = {
   },
 };
 
-export const chatbotSettingsAPI = {
-  updateSettings: async (characterId: string, data: any) => {
-    const response = await apiClient.put(`/chatbot-settings/${characterId}`, data);
-    return response.data;
-  }
-};
-
 export default apiClient;
 
 
