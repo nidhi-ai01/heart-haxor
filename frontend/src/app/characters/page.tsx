@@ -363,8 +363,14 @@ export default function CharactersPage() {
         <CharacterCustomizationModal
           isOpen={Boolean(customizingCharacterId)}
           characterId={customizingCharacterId}
-          characterName={characters.find((c) => c.id === customizingCharacterId)?.name || "Character"}
-          characterImage={characters.find((c) => c.id === customizingCharacterId)?.imageUrl || ""}
+          characterName={
+            characters.find((c) => c.id === customizingCharacterId)?.name ||
+            "Character"
+          }
+          characterImage={
+            characters.find((c) => c.id === customizingCharacterId)?.imageUrl ||
+            ""
+          }
           onClose={() => setCustomizingCharacterId(null)}
         />
       )}
