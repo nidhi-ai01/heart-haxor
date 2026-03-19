@@ -7,7 +7,7 @@
 
 "scripts": {
 "dev": "tsx watch src/server.ts",
-"build": "echo build skipped",
+"build": "npx prisma generate",
 "start": "tsx src/server.ts",
 "seed": "tsx src/seeds/seedCharacters.ts"
 },

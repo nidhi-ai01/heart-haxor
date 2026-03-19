@@ -8,7 +8,13 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://heart-haxor-three.vercel.app/', 
+    'http://localhost:3000'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 import characterRoutes from './routes/characterRoutes.js';
@@ -29,11 +35,16 @@ app.use('/uploads', express.static('uploads'));
 const server = http.createServer(app);
 
 const io = new Server(server, {
-cors: {
-origin: "*",
-methods: ["GET", "POST"]
-}
+  cors: {
+    origin: [
+      'https://heart-haxor-three.vercel.app/', 
+      'http://localhost:3000'
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
+  }
 });
+
 
 import { registerChatHandlers } from './socket/chatHandler.js';
 import { registerVoiceHandlers } from './socket/voiceHandler.js';
