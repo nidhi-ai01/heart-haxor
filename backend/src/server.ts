@@ -8,13 +8,16 @@ dotenv.config();
 
 const app = express();
 
+import cors from "cors";
+
 app.use(cors({
   origin: [
-    'https://heart-haxor-three.vercel.app',
-    'http://localhost:3000'
+    "http://localhost:3000",
+    "https://heart-haxor-git-main-nidhis-projects-cdd74adb.vercel.app"
   ],
   credentials: true
 }));
+
 
 app.use(express.json());
 
