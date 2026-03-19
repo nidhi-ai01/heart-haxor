@@ -7,8 +7,8 @@
 
 "scripts": {
 "dev": "tsx watch src/server.ts",
-"build": "npx prisma generate",
-"start": "tsx src/server.ts",
+"build": "npm install && npx prisma generate",
+"start": "node_modules/.bin/tsx src/server.ts",
 "seed": "tsx src/seeds/seedCharacters.ts"
 },
 
