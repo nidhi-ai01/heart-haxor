@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signInWithPopup } from "firebase/auth";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import Button from "@/components/ui/Button";
@@ -9,10 +10,11 @@ import Input from "@/components/ui/Input";
 import PasswordInput from "@/components/ui/PasswordInput";
 import Card from "@/components/ui/Card";
 import { Mail, Lock, User, Calendar, ChevronRight } from "lucide-react";
+import { auth, googleProvider, getFirebaseAuthErrorMessage } from "@/lib/firebase";
 
 export default function Signup() {
   const router = useRouter();
-  const { registerUser, error, clearError } = useAuth();
+  const { registerUser, loginWithGoogleProfile, error, clearError } = useAuth();
   const { showSuccess, showError } = useToast();
 
   const [loading, setLoading] = useState(false);
@@ -69,6 +71,32 @@ export default function Signup() {
       setTimeout(() => router.push("/login"), 900);
     } catch (err: unknown) {
       showError(err instanceof Error ? err.message : "Signup failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    try {
+      setLoading(true);
+      clearError();
+      const result = await signInWithPopup(auth, googleProvider);
+      const fbUser = result.user;
+      const googleEmail = fbUser.email;
+      if (!googleEmail) {
+        showError("This Google account has no email. Use another account or email signup.");
+        return;
+      }
+      const displayName = fbUser.displayName?.trim() || googleEmail.split("@")[0] || "User";
+      const user = await loginWithGoogleProfile(googleEmail, displayName);
+      showSuccess("Signed up with Google.");
+      if (user.dob) {
+        router.push("/role-select");
+      } else {
+        router.push("/complete-dob");
+      }
+    } catch (err: unknown) {
+      showError(getFirebaseAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -185,7 +213,31 @@ export default function Signup() {
                 </Button>
               </form>
 
-              <p className="mt-8 text-sm text-slate-600 dark:text-slate-400">
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-200 dark:border-white/10" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase tracking-wide">
+                  <span className="bg-white px-3 text-slate-500 dark:bg-slate-900 dark:text-slate-400">Or</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                fullWidth
+                size="lg"
+                loading={loading}
+                onClick={handleGoogle}
+                className="border-slate-200 dark:border-white/10"
+              >
+                Continue with Google
+              </Button>
+              <p className="mt-2 text-center text-xs text-slate-500 dark:text-slate-500">
+                Google sign-up uses Firebase on this device; your account is created or linked on our servers by email.
+              </p>
+
+              <p className="mt-6 text-sm text-slate-600 dark:text-slate-400">
                 Already registered?{" "}
                 <button
                   type="button"
