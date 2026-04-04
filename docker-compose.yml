@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - NEXT_PUBLIC_SOCKET_URL=http://localhost:3001
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATABASE_URL=file:./dev.db
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - VOICE_SERVICE_URL=http://voice-service:8000
+    volumes:
+      - ./backend/prisma/dev.db:/app/prisma/dev.db
+    depends_on:
+      - voice-service
+
+  voice-service:
+    build: ./voice-service
+    ports:
+      - "8000:8000"
