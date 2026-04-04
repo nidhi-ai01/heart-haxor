@@ -1,5 +1,6 @@
 import FeatureSection from "@/components/FeatureSection";
 import HeroSection from "@/components/HeroSection";
+import Header from "@/components/layout/Header";
 
 export default function Home() {
   return (
@@ -9,6 +10,7 @@ export default function Home() {
         aria-hidden
       />
       <div className="relative z-10">
+        <Header />
         <HeroSection />
         <FeatureSection />
       </div>
