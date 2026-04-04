@@ -148,6 +148,30 @@ export default function Signup() {
                 </p>
               </div>
 
+              <Button
+                type="button"
+                variant="primary"
+                fullWidth
+                size="lg"
+                loading={loading}
+                onClick={handleGoogle}
+                className="mb-6"
+              >
+                Continue with Google
+              </Button>
+              <p className="mb-6 text-center text-xs text-slate-500 dark:text-slate-500">
+                Google sign-up uses Firebase on this device; your account is created or linked on our servers by email.
+              </p>
+
+              <div className="relative mb-8">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-200 dark:border-white/10" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase tracking-wide">
+                  <span className="bg-white px-3 text-slate-500 dark:bg-slate-900 dark:text-slate-400">Or</span>
+                </div>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-5">
                 <Input
                   type="text"
@@ -213,31 +237,7 @@ export default function Signup() {
                 </Button>
               </form>
 
-              <div className="relative my-8">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-slate-200 dark:border-white/10" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase tracking-wide">
-                  <span className="bg-white px-3 text-slate-500 dark:bg-slate-900 dark:text-slate-400">Or</span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                fullWidth
-                size="lg"
-                loading={loading}
-                onClick={handleGoogle}
-                className="border-slate-200 dark:border-white/10"
-              >
-                Continue with Google
-              </Button>
-              <p className="mt-2 text-center text-xs text-slate-500 dark:text-slate-500">
-                Google sign-up uses Firebase on this device; your account is created or linked on our servers by email.
-              </p>
-
-              <p className="mt-6 text-sm text-slate-600 dark:text-slate-400">
+              <p className="mt-8 text-sm text-slate-600 dark:text-slate-400">
                 Already registered?{" "}
                 <button
                   type="button"
