@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUqyDQUqfDtc8XaO0OSI48DBW_EVuw-CQ",
-  authDomain: "hearthaxor.com",
+  authDomain: "heart-haxor-cea66.firebaseapp.com"
   projectId: "heart-haxor-cea66",
   storageBucket: "heart-haxor-cea66.appspot.com",
   messagingSenderId: "422983093207",
