@@ -9,7 +9,7 @@ interface ProtectedLayoutProps {
   sidebar: React.ReactNode;
 }
 
-const PUBLIC_ROUTES = ["/", "/login", "/signup"];
+const PUBLIC_ROUTES = ["/", "/login", "/signup", "/privacy", "/terms"];
 
 export default function ProtectedLayout({
   children,
