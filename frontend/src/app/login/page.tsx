@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signInWithPopup } from "firebase/auth";
@@ -206,9 +207,6 @@ export default function Login() {
               >
                 Continue with Google
               </Button>
-              <p className="mt-2 text-center text-xs text-slate-500 dark:text-slate-500">
-                Google sign-in uses Firebase on this device; your account is created or linked on our servers by email.
-              </p>
 
               <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-500">
                 No judgment. No pressure. Not a crisis service—for emotional companionship only.

@@ -159,9 +159,6 @@ export default function Signup() {
               >
                 Continue with Google
               </Button>
-              <p className="mb-6 text-center text-xs text-slate-500 dark:text-slate-500">
-                Google sign-up uses Firebase on this device; your account is created or linked on our servers by email.
-              </p>
 
               <div className="relative mb-8">
                 <div className="absolute inset-0 flex items-center">
