@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String    @id @default(uuid())
+  name       String
+  email      String    @unique
+  password   String?
+  role       String    @default("user")
+  dob        DateTime?
+  isAdult    Boolean   @default(false)
+  googleId   String?   @unique
+  isVerified Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  chats           Chat[]
+  chatbotSettings UserChatbotSettings[]
+
+  @@index([email])
+}
+
+model Character {
+  id              String   @id @default(uuid())
+  name            String
+  role            String
+  personality     String
+  description     String
+  backstory       String
+  imageUrl        String
+  intimacyLevel   String   @default("normal")
+  isSystem        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  chats           Chat[]
+  userSettings    UserChatbotSettings[]
+}
+
+model Chat {
+  id          String    @id @default(uuid())
+  userId      String
+  characterId String
+  user        User      @relation(fields: [userId], references: [id])
+  character   Character @relation(fields: [characterId], references: [id])
+  messages    Message[]
+  memories    Memory[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  chatId    String
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+  chat      Chat     @relation(fields: [chatId], references: [id])
+}
+
+model Memory {
+  id         String   @id @default(uuid())
+  chatId     String
+  content    String
+  importance Int      @default(1)
+  chat       Chat     @relation(fields: [chatId], references: [id])
+}
+
+model UserChatbotSettings {
+  id             String   @id @default(cuid())
+  userId         String
+  characterId    String
+  customName     String?
+  customImageUrl String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, characterId])
+  @@index([userId])
+  @@index([characterId])
+}
