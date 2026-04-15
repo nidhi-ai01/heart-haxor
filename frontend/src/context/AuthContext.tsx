@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { authAPI, handleAPIError, type AuthUserDto } from "@/lib/api";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
 
 interface User {
   id: string;
@@ -21,7 +23,7 @@ interface AuthContextType {
   loginWithEmail: (email: string, password: string) => Promise<AuthUserDto>;
   loginWithGoogleProfile: (email: string, name: string) => Promise<AuthUserDto>;
   completeDob: (dob: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -159,14 +161,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setError(null);
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("selectedRole");
-    sessionStorage.clear();
-    window.location.href = "/signup";
+  const logout = async () => {
+    try {
+      setUser(null);
+      setError(null);
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      try {
+        await signOut(auth);
+      } catch (e) {
+        console.error("Firebase logout error:", e);
+      }
+      
+      window.location.replace("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      window.location.replace("/login");
+    }
   };
 
   const clearError = () => {

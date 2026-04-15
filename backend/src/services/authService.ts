@@ -1,7 +1,11 @@
+import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import validator from 'validator';
-import prisma from '../lib/prisma.js';
+import supabase from '../lib/supabase.js';
+import type { User } from '../types/database.js';
+
+const uuid = () => crypto.randomUUID();
 
 // ============= AGE / DOB UTILITIES =============
 export function getAgeFromDob(dob: Date): number {
@@ -133,27 +137,41 @@ export const registerUser = async (
 
   const dobDate = parseAndValidateDob(dob);
 
-  const existingEmail = await prisma.user.findUnique({
-    where: { email: emailNorm },
-  });
+  // Check if email already exists
+  const { data: existingUser } = await supabase
+    .from('User')
+    .select('id')
+    .eq('email', emailNorm)
+    .single();
 
-  if (existingEmail) {
+  if (existingUser) {
     throw new Error('Email already registered');
   }
 
   const hashedPassword = await hashPassword(password);
   const isAdult = computeIsAdult(dobDate);
 
-  const user = await prisma.user.create({
-    data: {
+  const now = new Date().toISOString();
+
+  const { data: user, error } = await supabase
+    .from('User')
+    .insert({
+      id: uuid(),
       name,
       email: emailNorm,
       password: hashedPassword,
-      dob: dobDate,
+      dob: dobDate.toISOString(),
       isAdult,
       isVerified: true,
-    },
-  });
+      createdAt: now,
+      updatedAt: now,
+    })
+    .select('id')
+    .single();
+
+  if (error || !user) {
+    throw new Error(error?.message || 'Failed to create user');
+  }
 
   return {
     userId: user.id,
@@ -176,11 +194,13 @@ export const loginWithEmail = async (
     throw new Error('Password is required');
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: emailNorm },
-  });
+  const { data: user, error } = await supabase
+    .from('User')
+    .select('*')
+    .eq('email', emailNorm)
+    .single();
 
-  if (!user) {
+  if (error || !user) {
     throw new Error('User not found');
   }
 
@@ -198,7 +218,7 @@ export const loginWithEmail = async (
     userId: user.id,
     name: user.name,
     email: user.email,
-    dob: user.dob,
+    dob: user.dob ? new Date(user.dob) : null,
     isAdult: user.isAdult,
   };
 };
@@ -221,36 +241,62 @@ export const loginOrRegisterWithGoogleProfile = async (
     throw new Error('Name is required');
   }
 
-  let user = await prisma.user.findUnique({
-    where: { email: emailNorm },
-  });
+  // Check if user already exists
+  const { data: existingUser } = await supabase
+    .from('User')
+    .select('*')
+    .eq('email', emailNorm)
+    .single();
 
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
+  let user: User;
+
+  if (!existingUser) {
+    // Create new user
+    const now = new Date().toISOString();
+    const { data: newUser, error } = await supabase
+      .from('User')
+      .insert({
+        id: uuid(),
         name: displayName,
         email: emailNorm,
         password: null,
         dob: null,
         isAdult: false,
         isVerified: true,
-      },
-    });
+        createdAt: now,
+        updatedAt: now,
+      })
+      .select('*')
+      .single();
+
+    if (error || !newUser) {
+      throw new Error(error?.message || 'Failed to create user');
+    }
+    user = newUser as User;
   } else {
-    user = await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        name: displayName.length >= 2 ? displayName : user.name,
+    // Update existing user
+    const updateName = displayName.length >= 2 ? displayName : existingUser.name;
+    const { data: updatedUser, error } = await supabase
+      .from('User')
+      .update({
+        name: updateName,
         isVerified: true,
-      },
-    });
+      })
+      .eq('id', existingUser.id)
+      .select('*')
+      .single();
+
+    if (error || !updatedUser) {
+      throw new Error(error?.message || 'Failed to update user');
+    }
+    user = updatedUser as User;
   }
 
   return {
     userId: user.id,
     name: user.name,
     email: user.email,
-    dob: user.dob,
+    dob: user.dob ? new Date(user.dob) : null,
     isAdult: user.isAdult,
   };
 };
@@ -260,35 +306,47 @@ export const completeUserDob = async (
   userId: string,
   dob: Date
 ): Promise<{ id: string; name: string; email: string; dob: Date; isAdult: boolean }> => {
-  const existing = await prisma.user.findUnique({ where: { id: userId } });
-  if (!existing) {
+  const { data: existing, error: findError } = await supabase
+    .from('User')
+    .select('*')
+    .eq('id', userId)
+    .single();
+
+  if (findError || !existing) {
     throw new Error('User not found');
   }
+
   if (existing.dob) {
     return {
       id: existing.id,
       name: existing.name,
       email: existing.email,
-      dob: existing.dob,
+      dob: new Date(existing.dob),
       isAdult: existing.isAdult,
     };
   }
 
   const dobDate = parseAndValidateDob(dob);
 
-  const user = await prisma.user.update({
-    where: { id: userId },
-    data: {
-      dob: dobDate,
+  const { data: user, error } = await supabase
+    .from('User')
+    .update({
+      dob: dobDate.toISOString(),
       isAdult: computeIsAdult(dobDate),
-    },
-  });
+    })
+    .eq('id', userId)
+    .select('*')
+    .single();
+
+  if (error || !user) {
+    throw new Error(error?.message || 'Failed to update DOB');
+  }
 
   return {
     id: user.id,
     name: user.name,
     email: user.email,
-    dob: user.dob!,
+    dob: new Date(user.dob),
     isAdult: user.isAdult,
   };
 };
@@ -308,11 +366,13 @@ export const getUserById = async (userId: string): Promise<{
   isAdult: boolean;
   isVerified: boolean;
 }> => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
+  const { data: user, error } = await supabase
+    .from('User')
+    .select('*')
+    .eq('id', userId)
+    .single();
 
-  if (!user) {
+  if (error || !user) {
     throw new Error('User not found');
   }
 
@@ -320,7 +380,7 @@ export const getUserById = async (userId: string): Promise<{
     id: user.id,
     name: user.name,
     email: user.email,
-    dob: user.dob,
+    dob: user.dob ? new Date(user.dob) : null,
     isAdult: user.isAdult,
     isVerified: user.isVerified,
   };

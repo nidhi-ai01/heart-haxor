@@ -58,7 +58,7 @@ export default function HeroSection() {
 
             <motion.div variants={item} className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button
-                onClick={() => router.push("/signup")}
+                onClick={() => router.push("/signup", { scroll: false })}
                 size="lg"
                 variant="primary"
                 className="min-w-[12.5rem] shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
@@ -67,7 +67,7 @@ export default function HeroSection() {
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Button>
               <Button
-                onClick={() => router.push("/login")}
+                onClick={() => router.push("/login", { scroll: false })}
                 variant="outline"
                 size="lg"
                 className="min-w-[10.5rem] border-white/12 bg-transparent text-slate-200 hover:bg-white/[0.06]"

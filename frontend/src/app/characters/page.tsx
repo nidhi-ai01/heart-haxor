@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Grid2x2, Rows3, MessageCircle, ArrowLeft, Settings, RefreshCw } from "lucide-react";
+import { Grid2x2, Rows3, MessageCircle, ArrowLeft, Settings, RefreshCw, Sparkles } from "lucide-react";
 import clsx from "clsx";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
@@ -41,13 +41,13 @@ export default function CharactersPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      router.push("/login");
+      router.push("/login", { scroll: false });
       return;
     }
 
     const role = localStorage.getItem("selectedRole");
     if (!role) {
-      router.push("/role-select");
+      router.push("/role-select", { scroll: false });
       return;
     }
 
@@ -168,26 +168,31 @@ export default function CharactersPage() {
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-7xl flex-col gap-6">
+
+      {/* ─── HEADER SECTION ─── */}
       <section className="app-panel-strong rounded-[2rem] p-6 sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => router.push("/role-select")}
-                className="rounded-2xl border border-slate-200 bg-white/75 p-3 text-slate-700 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+                onClick={() => router.push("/role-select", { scroll: false })}
+                className="rounded-2xl border border-slate-200 bg-white/75 p-3 text-slate-700 transition-all duration-200 hover:bg-white hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
                 aria-label="Go back to role selection"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
-              <Badge variant={selectedRole === "mentor" ? "mentor" : selectedRole === "partner" ? "partner" : "friend"}>
+              <Badge
+                variant={selectedRole === "mentor" ? "mentor" : selectedRole === "partner" ? "partner" : "friend"}
+                size="lg"
+              >
                 {selectedRole || "role"}
               </Badge>
             </div>
-            <h1 className="mt-5 text-4xl font-extrabold tracking-[-0.04em] text-slate-900 dark:text-slate-100 title">
+            <h1 className="mt-5 text-4xl font-extrabold tracking-[-0.04em] text-slate-900 dark:text-slate-100 sm:text-5xl">
               Choose Your Companion
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400 subtitle">
-              Select a companion tailored to your needs.
+            <p className="mt-3 max-w-2xl text-base leading-7 text-slate-500 dark:text-slate-400">
+              Select a companion tailored to your needs. Each character has a unique personality and conversation style.
             </p>
           </div>
 
@@ -196,9 +201,9 @@ export default function CharactersPage() {
               <button
                 onClick={() => setViewMode("grid")}
                 className={clsx(
-                  "rounded-xl p-2.5 transition",
+                  "rounded-xl p-2.5 transition-all duration-200",
                   viewMode === "grid"
-                    ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                    ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900"
                     : "text-slate-600 hover:bg-white dark:text-slate-400 dark:hover:bg-white/8"
                 )}
                 aria-label="Switch to grid view"
@@ -208,9 +213,9 @@ export default function CharactersPage() {
               <button
                 onClick={() => setViewMode("list")}
                 className={clsx(
-                  "rounded-xl p-2.5 transition",
+                  "rounded-xl p-2.5 transition-all duration-200",
                   viewMode === "list"
-                    ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                    ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900"
                     : "text-slate-600 hover:bg-white dark:text-slate-400 dark:hover:bg-white/8"
                 )}
                 aria-label="Switch to list view"
@@ -222,6 +227,7 @@ export default function CharactersPage() {
         </div>
       </section>
 
+      {/* ─── CARDS SECTION ─── */}
       {filteredCharacters.length === 0 ? (
         <section className="app-panel rounded-[2rem] p-10 text-center">
           <h2 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">
@@ -230,63 +236,69 @@ export default function CharactersPage() {
           <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
             Try another role, or refresh after new characters are added.
           </p>
-          <Button onClick={() => router.push("/role-select")} className="mt-6">
+          <Button onClick={() => router.push("/role-select", { scroll: false })} className="mt-6">
             Choose another role
           </Button>
         </section>
       ) : (
         <section
           className={clsx(
-            viewMode === "grid" ? "grid gap-[20px]" : "space-y-4"
+            viewMode === "grid" ? "grid gap-6" : "flex flex-col gap-5"
           )}
-          style={viewMode === "grid" ? { gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' } : undefined}
+          style={viewMode === "grid" ? { gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' } : undefined}
         >
-          {filteredCharacters.map((character) => (
+          {filteredCharacters.map((character, index) => (
             <article
               key={character.id}
               onClick={() => handleCharacterSelect(character.id)}
               className={clsx(
-                "cursor-pointer p-4 transition-all duration-300",
-                "bg-black/5 dark:bg-white/5 backdrop-blur-[20px] rounded-[20px]",
-                "hover:-translate-y-1.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.4)]",
-                viewMode === "list" && "flex flex-col gap-5 sm:flex-row sm:items-center"
+                "group cursor-pointer overflow-hidden rounded-[1.5rem] transition-all duration-300",
+                "bg-white/60 dark:bg-white/[0.04] backdrop-blur-xl",
+                "border border-slate-200/60 dark:border-white/[0.08]",
+                "shadow-[0_4px_24px_rgba(15,23,42,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.2)]",
+                "hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_20px_50px_rgba(15,23,42,0.12)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)]",
+                "hover:border-slate-300/80 dark:hover:border-white/[0.14]",
+                viewMode === "list" && "flex flex-col sm:flex-row"
               )}
+              style={{ animationDelay: `${index * 80}ms` }}
             >
-              <div className={clsx("relative overflow-hidden rounded-[1.5rem]", viewMode === "grid" ? "h-72" : "h-36 w-full sm:w-44")}>
+              {/* ─── IMAGE ─── */}
+              <div
+                className={clsx(
+                  "relative overflow-hidden",
+                  viewMode === "grid" ? "h-64" : "h-40 w-full sm:h-auto sm:w-48 sm:shrink-0"
+                )}
+              >
                 <img
                   src={
                     character.imageUrl.startsWith("http") || character.imageUrl.startsWith("/")
-                      ? (character.imageUrl.includes('placehold') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(character.name)}&background=random` : character.imageUrl)
+                      ? (character.imageUrl.includes('placehold') ? `https://ui-avatars.com/api/?name=${encodeURIComponent(character.name)}&background=random&size=400` : character.imageUrl)
                       : `/characters/${character.imageUrl}`
                   }
                   alt={character.name}
-                  className="h-full w-full object-cover rounded-[16px] avatar"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   onError={(e) => {
-                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(character.name)}&background=random`;
+                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(character.name)}&background=random&size=400`;
                   }}
                 />
+
+                {/* Gradient overlay on image */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+
+                {/* Settings button */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setCustomizingCharacterId(character.id);
                   }}
-                  className="absolute right-3 top-3 rounded-xl bg-slate-950/70 p-2 text-white backdrop-blur-sm hover:bg-slate-950"
+                  className="absolute right-3 top-3 rounded-xl bg-black/40 p-2.5 text-white/90 backdrop-blur-md transition-all duration-200 hover:bg-black/60 hover:text-white hover:scale-105"
                   title="Customize character"
                 >
                   <Settings className="h-4 w-4" />
                 </button>
-              </div>
 
-              <div className="flex flex-1 flex-col">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-                      {character.name}
-                    </h3>
-                    <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">
-                      {character.description}
-                    </p>
-                  </div>
+                {/* Role badge on image */}
+                <div className="absolute bottom-3 left-3">
                   <Badge
                     variant={
                       character.role === "mentor"
@@ -295,28 +307,55 @@ export default function CharactersPage() {
                         ? "partner"
                         : "friend"
                     }
+                    size="sm"
+                    className="shadow-lg backdrop-blur-sm"
                   >
                     {character.role}
                   </Badge>
                 </div>
+              </div>
 
+              {/* ─── CONTENT ─── */}
+              <div className="flex flex-1 flex-col p-5 sm:p-6">
+                {/* Title */}
+                <h3 className="text-xl font-extrabold tracking-[-0.02em] text-slate-900 dark:text-slate-100 sm:text-2xl">
+                  {character.name}
+                </h3>
+
+                {/* Description */}
+                <p className="mt-2.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400 line-clamp-2">
+                  {character.description}
+                </p>
+
+                {/* Backstory in list mode */}
                 {viewMode === "list" && (
-                  <p className="mt-4 text-sm leading-7 text-slate-500 dark:text-slate-400">
+                  <p className="mt-3 text-sm leading-relaxed text-slate-400 dark:text-slate-500 line-clamp-2">
                     {character.backstory}
                   </p>
                 )}
 
-                <div className="mt-6 flex items-center justify-between gap-3">
-                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                    Ready for conversation
-                  </p>
+                {/* Divider */}
+                <div className="my-4 h-px bg-slate-200/60 dark:bg-white/[0.06]" />
+
+                {/* Footer */}
+                <div className="mt-auto flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                    </span>
+                    <p className="text-xs font-medium tracking-wide text-slate-400 dark:text-slate-500">
+                      Ready to chat
+                    </p>
+                  </div>
+
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCharacterSelect(character.id);
                     }}
-                    style={{ background: 'linear-gradient(135deg, #4facfe, #00f2fe)', border: 'none' }}
-                    className="flex gap-2 items-center justify-center rounded-[12px] px-3 py-2 text-white font-medium hover:opacity-90 transition-opacity chat-btn"
+                    className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 ease-in-out hover:shadow-lg hover:shadow-blue-500/25 hover:scale-[1.02] active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(135deg, #4facfe, #00f2fe)' }}
                   >
                     <MessageCircle className="h-4 w-4" />
                     Start Chat

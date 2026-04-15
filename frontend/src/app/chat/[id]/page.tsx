@@ -8,6 +8,7 @@ import Input from "@/components/ui/Input";
 import { Send, Mic, ArrowLeft, Wifi, WifiOff } from "lucide-react";
 import clsx from "clsx";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 interface Message {
   id: string;
@@ -28,7 +29,9 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const { id: characterId } = use(params);
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const { showInfo } = useToast();
 
   const userId = user?.id || "user-1";
 
@@ -160,7 +163,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   }, [characterId, userId]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Use requestAnimationFrame to ensure DOM has updated
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    });
   };
 
   useEffect(() => {
@@ -191,11 +197,9 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     scrollToBottom();
   };
 
-
-
   if (characterError) {
     return (
-      <div className="flex min-h-[calc(100vh-2rem)] items-center justify-center p-4">
+      <div className="flex h-[calc(100vh-2rem)] items-center justify-center p-4">
         <div className="app-panel-strong max-w-lg rounded-[2rem] p-8 text-center">
           <p className="app-eyebrow">Character unavailable</p>
           <h2 className="mt-3 text-3xl font-extrabold text-slate-900 dark:text-slate-100">
@@ -204,7 +208,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
             The character may have been removed or the link may be outdated.
           </p>
-          <Button onClick={() => router.push("/characters")} className="mt-6">
+          <Button onClick={() => router.push("/characters", { scroll: false })} className="mt-6">
             Back to characters
           </Button>
         </div>
@@ -214,7 +218,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
   if (!character) {
     return (
-      <div className="flex min-h-[calc(100vh-2rem)] items-center justify-center p-4">
+      <div className="flex h-[calc(100vh-2rem)] items-center justify-center p-4">
         <div className="app-panel-strong flex w-full max-w-sm flex-col items-center gap-4 rounded-[2rem] px-8 py-10 text-center">
           <div className="h-12 w-12 animate-spin rounded-full border-[3px] border-slate-300 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-400" />
           <p className="text-sm text-slate-600 dark:text-slate-400">Loading your conversation...</p>
@@ -224,13 +228,16 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   }
 
   return (
+    /* ─── OUTERMOST: lock to viewport, no page scroll ─── */
     <div className="mx-auto flex h-[calc(100vh-2rem)] w-full max-w-7xl flex-col overflow-hidden rounded-[2rem] border border-white/45 bg-white/72 shadow-[0_24px_70px_rgba(15,23,42,0.1)] backdrop-blur-2xl dark:border-white/10 dark:bg-[rgba(8,17,31,0.74)]">
-      <header className="border-b border-slate-200/70 px-4 py-4 dark:border-white/10 sm:px-6">
+
+      {/* ─── HEADER: fixed at top ─── */}
+      <header className="shrink-0 border-b border-slate-200/70 px-4 py-4 dark:border-white/10 sm:px-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => router.push("/characters")}
-              className="rounded-2xl border border-slate-200 bg-white/70 p-3 text-slate-700 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+              onClick={() => router.push("/characters", { scroll: false })}
+              className="rounded-2xl border border-slate-200 bg-white/70 p-3 text-slate-700 transition-colors hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
@@ -269,8 +276,11 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         </div>
       </header>
 
-      <div className="grid flex-1 gap-0 lg:grid-cols-[0.28fr_0.72fr]">
-        <aside className="hidden border-r border-slate-200/70 p-6 dark:border-white/10 lg:block">
+      {/* ─── BODY: sidebar + chat, flex-1 with min-h-0 to allow inner scroll ─── */}
+      <div className="flex min-h-0 flex-1">
+
+        {/* ─── SIDEBAR: fixed within body, scrolls independently if tall ─── */}
+        <aside className="hidden w-[28%] shrink-0 overflow-y-auto border-r border-slate-200/70 p-6 dark:border-white/10 lg:block">
           <div className="rounded-[1.75rem] bg-slate-950 p-6 text-white">
             <p className="app-eyebrow text-blue-200">Conversation profile</p>
             <h2 className="mt-3 text-2xl font-extrabold">{character.name}</h2>
@@ -284,8 +294,14 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           </div>
         </aside>
 
-        <section className="flex min-h-0 flex-col">
-          <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+        {/* ─── CHAT COLUMN: header-messages-input stacked vertically ─── */}
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+
+          {/* ─── MESSAGES: the ONLY scrollable area ─── */}
+          <div
+            ref={messagesContainerRef}
+            className="flex-1 overflow-y-auto scroll-smooth px-4 py-5 sm:px-6"
+          >
             {messages.length === 0 ? (
               <div className="flex h-full items-center justify-center">
                 <div className="max-w-md rounded-[1.75rem] border border-slate-200 bg-white/75 p-8 text-center dark:border-white/10 dark:bg-white/5">
@@ -335,9 +351,16 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             )}
           </div>
 
-          <div className="border-t border-slate-200/70 p-4 dark:border-white/10 sm:p-5">
+          {/* ─── INPUT: pinned to bottom ─── */}
+          <div className="shrink-0 border-t border-slate-200/70 p-4 dark:border-white/10 sm:p-5">
             <form onSubmit={sendMessage} className="flex items-center gap-3">
-              <Button type="button" variant="ghost" size="md" title="Voice input coming soon">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="md" 
+                title="Voice input coming soon"
+                onClick={() => showInfo("🎤 Voice input feature is coming soon!")}
+              >
                 <Mic className="h-4 w-4" />
               </Button>
               <Input

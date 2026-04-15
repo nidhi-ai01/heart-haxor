@@ -1,63 +1,75 @@
 <<<<<<< HEAD
 # Heart Haxor AI - AI Companion Platform
 
-Heart Haxor is a full-stack AI companion platform that enables users to chat with customizable AI characters. Each character has its own personality, backstory, and communication style powered by large language models. The platform supports text chat, voice messages, and an immersive visual experience.
+Heart Haxor is a full-stack AI companion platform that enables users to interact with customizable AI characters. Each character is designed with a distinct personality, backstory, and communication style powered by large language models.
+
+The platform focuses on delivering a refined and immersive conversational experience with real-time communication, personality-driven responses, and a modern interface.
 
 ---
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Technology Stack](#technology-stack)
-4. [Directory Structure](#directory-structure)
-5. [Features](#features)
-6. [Installation](#installation)
-7. [Configuration](#configuration)
-8. [Running the Application](#running-the-application)
-9. [API Reference](#api-reference)
-10. [Database Schema](#database-schema)
-11. [Character System](#character-system)
-12. [Voice Pipeline](#voice-pipeline)
-13. [Contributing](#contributing)
+1. Overview
+2. Architecture
+3. MVP Architecture Philosophy
+4. Technology Stack
+5. Directory Structure
+6. Features
+7. Installation
+8. Configuration
+9. Running the Application
+10. Database
+11. Custom Personality System
+12. Voice Input
+13. UI/UX Enhancements
+14. Contributing
 
 ---
 
 ## Overview
 
-Heart Haxor provides an immersive chat experience where users can interact with AI-powered characters. Each character is designed with:
+Heart Haxor provides an intelligent conversational environment where users can engage with AI-powered companions. Each interaction is influenced by structured personality design and contextual awareness.
 
-- A unique personality and communication style
-- A detailed backstory that influences their responses
-- Visual representation through high-quality images
-- Categorized intimacy levels and themes
+Key capabilities include:
 
-The platform uses real-time communication via WebSockets for instant message delivery and supports voice input through speech-to-text integration.
+* Real-time AI chat interactions
+* Personality-based response generation
+* Persistent chat history
+* Scalable backend architecture
 
 ---
 
 ## Architecture
 
-The application follows a three-tier architecture:
-
 ```
-[Frontend (Next.js)]  <-->  [Backend (Express + Socket.io)]  <-->  [Database (SQLite/Prisma)]
-                                      |
-                                      v
-                            [External Services]
-                            - Groq LLM API (Chat)
-                            - Groq Whisper API (STT)
-                            - Voice Service (Python/FastAPI)
+Frontend (Next.js)  <-->  Backend (Express + Socket.io)  <-->  Database (Supabase PostgreSQL)
+                                     |
+                                     v
+                           External Services
+                           - Groq LLM API
+                           - Web Speech API (Planned)
 ```
 
-### Data Flow
+---
 
-1. User sends a message (text or voice) from the React frontend
-2. Message is transmitted via Socket.io to the Express backend
-3. Backend retrieves character context and chat history from the database
-4. A system prompt is constructed and sent to the Groq LLM API
-5. The AI response is saved to the database and emitted back to the client
-6. For voice messages, audio is transcribed via Groq Whisper before processing
+## MVP Architecture Philosophy
+
+The application follows a feature-based MVP architecture optimized for rapid development and maintainability.
+
+### Principles
+
+* Avoid unnecessary abstraction layers
+* Organize code by feature (auth, chat, character)
+* Keep UI and business logic close during early development
+* Minimize file fragmentation
+* Scale structure only when complexity increases
+
+### Benefits
+
+* Faster development cycles
+* Easier debugging and maintenance
+* Clear and intuitive project structure
+* Flexibility for future expansion
 
 ---
 
@@ -65,97 +77,53 @@ The application follows a three-tier architecture:
 
 ### Frontend
 
-| Technology | Purpose |
-|------------|---------|
-| Next.js 16 | React framework with App Router |
-| TypeScript | Type-safe JavaScript |
-| Tailwind CSS | Utility-first CSS framework |
-| Socket.io Client | Real-time WebSocket communication |
-| Lucide React | Icon library |
+* Next.js
+* TypeScript
+* Tailwind CSS
+* Socket.io Client
 
 ### Backend
 
-| Technology | Purpose |
-|------------|---------|
-| Node.js | JavaScript runtime |
-| Express.js | HTTP server framework |
-| Socket.io | Real-time bidirectional communication |
-| Prisma | ORM for database access |
-| SQLite | Embedded relational database |
-| Groq SDK | LLM and Whisper API client |
-| TypeScript | Type-safe JavaScript |
+* Node.js
+* Express.js
+* Socket.io
+* Supabase (Database and Authentication)
 
-### Voice Service (Optional)
+### Database
 
-| Technology | Purpose |
-|------------|---------|
-| Python 3.10+ | Runtime |
-| FastAPI | Async HTTP framework |
-| OpenAI Whisper | Local speech-to-text (optional) |
-| Coqui TTS | Text-to-speech synthesis (optional) |
+* Supabase (PostgreSQL)
 
-### External APIs
+### AI Integration
 
-| Service | Purpose |
-|---------|---------|
-| Groq API | LLM inference (Llama 3.3 70B) |
-| Groq Whisper | Cloud-based speech-to-text |
+* Groq API for language model inference
 
 ---
 
 ## Directory Structure
 
 ```
-PookieAI/
-├── backend/                    # Express.js server
-│   ├── prisma/
-│   │   ├── schema.prisma       # Database schema
-│   │   └── dev.db              # SQLite database file
-│   ├── src/
-│   │   ├── controllers/        # HTTP route handlers
-│   │   ├── lib/                # Shared utilities (Prisma client)
-│   │   ├── middleware/         # Express middleware
-│   │   ├── routes/             # API route definitions
-│   │   ├── scripts/            # Database seeding and utilities
-│   │   ├── services/           # Business logic layer
-│   │   │   ├── chatService.ts  # Chat and message management
-│   │   │   ├── characterService.ts # Character CRUD
-│   │   │   ├── llmService.ts   # Groq LLM integration
-│   │   │   └── voiceService.ts # Speech-to-text integration
-│   │   ├── socket/             # Socket.io event handlers
-│   │   │   ├── chatHandler.ts  # Text chat events
-│   │   │   └── voiceHandler.ts # Voice message events
-│   │   ├── utils/              # Helper functions
-│   │   │   └── prompt.ts       # System prompt builder
-│   │   └── server.ts           # Application entry point
-│   ├── .env                    # Environment variables
-│   └── package.json
+project/
+├── backend/
+│   ├── routes/
+│   │   ├── auth.ts
+│   │   ├── chat.ts
+│   │   └── character.ts
+│   ├── services/
+│   │   ├── aiService.ts
+│   │   └── dbService.ts
+│   ├── config/
+│   │   └── supabase.ts
+│   └── server.ts
 │
-├── frontend/                   # Next.js application
-│   ├── app/
-│   │   ├── chat/[id]/page.tsx  # Dynamic chat page
-│   │   ├── page.tsx            # Home page (character grid)
-│   │   ├── layout.tsx          # Root layout with sidebar
-│   │   └── globals.css         # Global styles
+├── frontend/
+│   ├── features/
+│   │   ├── auth/
+│   │   ├── chat/
+│   │   └── character/
 │   ├── components/
-│   │   ├── layout/
-│   │   │   ├── Sidebar.tsx     # Navigation sidebar
-│   │   │   └── MainContent.tsx # Main content wrapper
-│   │   └── ui/
-│   │       └── Logo.tsx        # SVG logo component
-│   ├── contexts/
-│   │   └── SidebarContext.tsx  # Sidebar state management
 │   ├── lib/
-│   │   ├── socket.ts           # Socket.io client instance
-│   │   └── utils.ts            # Utility functions
-│   ├── public/
-│   │   └── characters/         # Character image assets
-│   └── package.json
-│
-├── voice-service/              # Python voice processing (optional)
-│   ├── main.py                 # FastAPI application
-│   ├── requirements.txt        # Python dependencies
-│   └── Dockerfile
+│   │   └── supabase.ts
+│   └── app/
 │
 └── README.md
 ```
@@ -166,25 +134,17 @@ PookieAI/
 
 ### Core Features
 
-- **AI Chat**: Real-time conversations with AI characters powered by Llama 3.3 70B via Groq
-- **Character System**: 12 pre-built characters with unique personalities across Fantasy, Sci-Fi, Anime, and Realistic categories
-- **Voice Messages**: Record voice messages that are transcribed and processed as text
-- **Chat History**: Persistent conversation storage with automatic context loading
-- **Responsive Design**: Mobile-friendly interface with collapsible sidebar
+* Real-time AI chat powered by Groq
+* Character-based conversational system
+* Persistent chat sessions
+* Authentication using Supabase
 
-### UI Features
+### Advanced Features
 
-- **Immersive Chat Interface**: Full-screen character background with glassmorphism effects
-- **Character Info Panel**: Slide-out panel showing character details, backstory, and metadata
-- **Call Modal**: Visual call interface (UI demonstration)
-- **Dynamic Theming**: Neon pink/violet gradient accents
-
-### Technical Features
-
-- **Real-time Communication**: Socket.io for instant message delivery
-- **Optimistic UI Updates**: Messages appear immediately before server confirmation
-- **System Prompt Engineering**: Characters maintain consistent personalities through structured prompts
-- **Database Migrations**: Prisma manages schema evolution
+* Custom personality injection
+* Structured prompt engineering
+* Real-time communication via WebSockets
+* Optimized MVP architecture
 
 ---
 
@@ -192,329 +152,402 @@ PookieAI/
 
 ### Prerequisites
 
-- Node.js 18 or higher
-- npm or yarn
-- Python 3.10+ (optional, for local voice service)
-- Git
+* Node.js 18 or higher
+* npm or yarn
 
-
-
-### Install Backend Dependencies
+### Backend Setup
 
 ```bash
 cd backend
 npm install
 ```
 
-### Install Frontend Dependencies
+### Frontend Setup
 
 ```bash
-cd ../frontend
+cd frontend
 npm install
-```
-
-### Install Voice Service Dependencies (Optional)
-
-```bash
-cd ../voice-service
-python -m venv venv
-venv\Scripts\activate  # Windows
-# source venv/bin/activate  # macOS/Linux
-pip install -r requirements.txt
 ```
 
 ---
 
 ## Configuration
 
-### Backend Environment Variables
+Create a `.env` file in the backend directory:
 
-Create a `.env` file in the `backend/` directory:
-
-```env
-DATABASE_URL="file:./dev.db"
-GROQ_API_KEY="your_groq_api_key_here"
-VOICE_SERVICE_URL="http://localhost:8000"
+```
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_anon_key
+GROQ_API_KEY=your_groq_api_key
 PORT=3001
 ```
-
-| Variable | Description |
-|----------|-------------|
-| DATABASE_URL | SQLite database file path |
-| GROQ_API_KEY | API key from console.groq.com |
-| VOICE_SERVICE_URL | URL of the Python voice service |
-| PORT | Backend server port |
-
-### Database Setup
-
-```bash
-cd backend
-npx prisma db push
-npx prisma generate
-```
-
-### Seed the Database
-
-```bash
-npx tsx src/scripts/seed.ts
-```
-
-This creates 12 system characters with images and metadata.
 
 ---
 
 ## Running the Application
 
-### Development Mode
+### Backend
 
-Open three terminal windows:
-
-**Terminal 1 - Backend:**
 ```bash
-cd backend
 npm run dev
 ```
 
-**Terminal 2 - Frontend:**
+### Frontend
+
 ```bash
-cd frontend
 npm run dev
 ```
 
-**Terminal 3 - Voice Service (Optional):**
-```bash
-cd voice-service
-venv\Scripts\uvicorn main:app --port 8000
-```
+### Application URLs
 
-### Access the Application
-
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:3001
-- Voice Service: http://localhost:8000
+* Frontend: http://localhost:3000
+* Backend: http://localhost:3001
 
 ---
 
-## API Reference
+## Database
 
-### REST Endpoints
+The application uses Supabase (PostgreSQL) as the primary data store.
 
-#### Characters
+### Core Tables
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/characters | List all characters |
-| GET | /api/characters/:id | Get character by ID |
-| POST | /api/characters | Create new character |
+* users
+* characters
+* chats
+* messages
+* user_chatbot_settings
 
-#### Chats
+### Example Structure
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/chats/user/:userId | Get user's chat list |
-| GET | /api/chats/:chatId/history | Get chat message history |
-
-#### Health
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /health | Service health check |
-
-### Socket.io Events
-
-#### Client to Server
-
-| Event | Payload | Description |
-|-------|---------|-------------|
-| join_chat | { userId, characterId } | Join/create a chat room |
-| send_message | { userId, characterId, content } | Send text message |
-| send_audio | { userId, characterId, audioData } | Send voice message |
-
-#### Server to Client
-
-| Event | Payload | Description |
-|-------|---------|-------------|
-| chat_history | Message[] | Previous messages on join |
-| receive_message | Message | New message from AI |
-| typing | { characterId } | AI is generating response |
-| transcription | { text, role } | Voice message transcribed |
-| receive_audio | { audio, text } | TTS audio response |
-| error | string | Error message |
-
----
-
-## Database Schema
-
-### Models
-
-#### User
-```prisma
-model User {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  chats     Chat[]
-}
 ```
-
-#### Character
-```prisma
-model Character {
-  id            String   @id @default(uuid())
-  name          String
-  role          String
-  description   String
-  backstory     String
-  imageUrl      String
-  intimacyLevel String   @default("normal")
-  isSystem      Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  chats         Chat[]
-}
-```
-
-#### Chat
-```prisma
-model Chat {
-  id          String    @id @default(uuid())
-  userId      String
-  characterId String
-  user        User      @relation(...)
-  character   Character @relation(...)
-  messages    Message[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-```
-
-#### Message
-```prisma
-model Message {
-  id        String   @id @default(uuid())
-  chatId    String
-  role      String   // "user" or "assistant"
-  content   String
-  createdAt DateTime @default(now())
-  chat      Chat     @relation(...)
-}
+user_chatbot_settings
+- id
+- user_id
+- character_id
+- custom_personality (TEXT)
 ```
 
 ---
 
-## Character System
+## Custom Personality System
 
-### Personality Definition
+The platform allows users to define custom personality behavior for AI characters.
 
-Each character is defined by:
+### Workflow
 
-1. **Name**: Display name
-2. **Role**: Short title (e.g., "Goth Streamer", "Mystic Guide")
-3. **Description**: Personality traits with bracketed tags (e.g., "[Fantasy] [Mystical]")
-4. **Backstory**: Multi-sentence background story
-5. **Intimacy Level**: Interaction style ("normal", "flirty", "romantic", "mystical")
+1. User defines personality description
+2. Data is stored in Supabase
+3. Backend injects personality into system prompt
+4. AI responses adapt dynamically
 
-### System Prompt Structure
-
-The AI receives a structured prompt that includes:
-
-```
-You are [Name], a [Role].
-
-=== CHARACTER PROFILE ===
-Name: [Name]
-Role: [Role]
-Personality & Vibe: [Description]
-Backstory: [Backstory]
-Relationship Status/Mood: [Intimacy Level]
-
-=== INSTRUCTIONS ===
-1. Stay in character. Never admit to being an AI.
-2. Match your tone to your description tags.
-3. Keep responses concise (1-3 sentences).
-4. Use actions (*looks away*, *smiles*) for body language.
-5. Context: You are chatting on the platform.
-```
-
-### Pre-built Characters
-
-| Name | Role | Category |
-|------|------|----------|
-| Luna | Mystic Guide | Fantasy |
-| Kael | Cyberpunk Runner | Sci-Fi |
-| Aria | Girl Next Door | Realistic |
-| Hinata | Shy Ninja | Anime |
-| Yor | Deadly Assassin | Anime |
-| Elena | Travel Vlogger | Realistic |
-| Nova | Rogue AI | Sci-Fi |
-| Mikasa | Elite Scout | Anime |
-| Seraphina | Elven High Druid | Fantasy |
-| Jade | Goth Streamer | Realistic |
-| Ava | Tech CEO | Realistic |
-| Kora | Stormbringer | Superhero |
+This enables personalized and context-aware interactions.
 
 ---
 
-## Voice Pipeline
+## Voice Input
 
-### Speech-to-Text Flow
+The voice input feature is currently under development.
 
-1. User holds microphone button in chat interface
-2. Browser's MediaRecorder captures audio in webm format
-3. Audio ArrayBuffer is sent via Socket.io to backend
-4. Backend writes buffer to temp file and sends to Groq Whisper API
-5. Transcribed text is processed as a regular chat message
-6. Transcription is echoed back to user for confirmation
+### Planned Behavior
 
-### Text-to-Speech (Planned)
+* Capture user speech via browser
+* Convert speech to text
+* Insert text into chat input
+* User manually submits message
 
-The TTS functionality is stubbed for future implementation. Options include:
+### Current Status
 
-- ElevenLabs API
-- OpenAI TTS
-- Coqui TTS (local)
+* UI integration completed
+* Feature temporarily disabled with "Coming Soon" feedback
+
+---
+
+## UI/UX Enhancements
+
+* Static background layout
+* Hidden scrollbars for cleaner interface
+* Subtle zoom interaction effects
+* Fixed chat input positioning
+* Improved modal and scroll behavior
+* Refined logout flow
 
 ---
 
 ## Contributing
 
-### Development Workflow
-
 1. Fork the repository
 2. Create a feature branch
-3. Make changes and test locally
+3. Implement changes
 4. Submit a pull request
 
-### Code Style
+---
 
-- TypeScript strict mode enabled
-- ESLint configuration inherited from Next.js
-- Prisma schema formatting via `npx prisma format`
+## Future Improvements
 
-### Adding New Characters
-
-1. Add character data to `backend/src/scripts/seed.ts`
-2. Place character image in `frontend/public/characters/`
-3. Run `npx tsx src/scripts/seed.ts` (clears and reseeds)
+* Full voice input implementation
+* Text-to-speech responses
+* Multi-language support
+* Advanced personality customization
 
 ---
 
 ## License
 
-This project is for educational and demonstration purposes.
+This project is intended for educational and demonstration purposes.
+=======
+# 💙 Heart Haxor AI — Intelligent Companion Platform
+
+> A full-stack AI companion system that enables emotionally-aware, personality-driven conversations with AI characters.
 
 ---
 
-## Acknowledgments
+## 🚀 Overview
 
-- Groq for fast LLM inference
-- OpenAI Whisper for speech recognition
-- Next.js and Tailwind CSS for frontend framework
-- Prisma for database management
-=======
-# Heart-Haxor
-HeartHaxor is a full-stack AI companion chatbot system that enables users to chat with AI characters having unique personalities, persistent conversations, and role-based interactions using modern LLM technology.
->>>>>>> e9b5821f49d5757429f169a5b7e9544014bac04b
-#   H e a r t - H a x o r 
- 
- #   H e a r t - H a x o r 
- 
- 
+**Heart Haxor AI** is an immersive AI chat platform where users interact with intelligent companions that have:
+
+* 🧠 Unique personalities & backstories
+* 💬 Real-time conversations (WebSockets)
+* 🎭 Mood-aware responses (AI + NLP)
+* 🎙️ Voice + text interaction support
+* 🧑‍🤝‍🧑 Role-based companions (Friend, Mentor, Partner)
+
+---
+
+## 🧠 Key Features
+
+### ✨ Core Features
+
+* 🔹 AI-powered character chat (LLM-based)
+* 🔹 Mood detection using NLP (Python + Transformers)
+* 🔹 Real-time messaging via Socket.io
+* 🔹 Persistent chat history (per user)
+* 🔹 Dynamic personality-based responses
+
+---
+
+### 🎭 Smart Interaction
+
+* Indirect mood questioning (human-like)
+* Emotion-aware replies (sad, happy, anxious, etc.)
+* Adaptive tone (friendly, calm, energetic)
+
+---
+
+### 🎨 UI/UX
+
+* Modern SaaS-style dashboard
+* Glassmorphism design
+* Smooth animations
+* Responsive layout
+
+---
+
+## 🏗️ Architecture
+
+```
+Frontend (Next.js)
+        ↓
+Backend (Node.js + Express + Socket.io)
+        ↓
+Database (Prisma + SQLite)
+        ↓
+Python AI Service (FastAPI - Mood Detection)
+        ↓
+External APIs (Grok LLM)
+```
+
+---
+
+## ⚙️ Tech Stack
+
+### 🖥️ Frontend
+
+* Next.js
+* TypeScript
+* Tailwind CSS
+* Socket.io Client
+
+---
+
+### ⚙️ Backend
+
+* Node.js
+* Express.js
+* Socket.io
+* Prisma ORM
+* SQLite
+
+---
+
+### 🤖 AI Layer
+
+* Python (FastAPI)
+* HuggingFace Transformers
+* Emotion Detection Model
+
+---
+
+### 🌐 External APIs
+
+* Grok API (Chat AI)
+
+---
+
+## 📁 Project Structure
+
+```
+heart-haxor/
+│
+├── backend/
+│   ├── controllers/
+│   ├── routes/
+│   ├── services/
+│   └── server.js
+│
+├── frontend/
+│   ├── app/
+│   ├── components/
+│   └── pages/
+│
+├── ai-service/
+│   └── mood_api.py
+│
+└── chat-storage/
+    └── user-*.json
+```
+
+---
+
+## 🔧 Installation
+
+### 1️⃣ Clone Repository
+
+```bash
+git clone https://github.com/your-username/heart-haxor.git
+cd heart-haxor
+```
+
+---
+
+### 2️⃣ Backend Setup
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+---
+
+### 3️⃣ Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+### 4️⃣ Python AI Service
+
+```bash
+cd ai-service
+pip install fastapi uvicorn transformers torch
+uvicorn mood_api:app --reload --port 8000
+```
+
+---
+
+## 🔐 Environment Variables
+
+Create `.env` in backend:
+
+```env
+GROK_API_KEY=your_api_key
+DATABASE_URL=file:./dev.db
+PORT=5000
+```
+
+---
+
+## 🧠 Mood Detection Flow
+
+1. User sends message
+2. Backend extracts last 5–10 messages
+3. Python model detects emotion
+4. Mood returned (sad, joy, anger, etc.)
+5. AI generates response based on mood
+
+---
+
+## 💬 Example
+
+**User:**
+
+> I feel really tired today
+
+**AI:**
+
+> That sounds exhausting… want to talk about what’s been draining you?
+
+---
+
+## 🚀 Running the App
+
+| Service    | URL                   |
+| ---------- | --------------------- |
+| Frontend   | http://localhost:3000 |
+| Backend    | http://localhost:5000 |
+| AI Service | http://localhost:8000 |
+
+---
+
+## 🔥 Highlights
+
+✔ Fully local AI system (no OpenAI needed)
+✔ Emotion-aware chatbot
+✔ Real-time architecture
+✔ Scalable design
+✔ Clean UI/UX
+
+---
+
+## 📌 Future Improvements
+
+* 📊 Mood analytics dashboard
+* 🧠 Memory system (long-term context)
+* 🔊 Text-to-speech (TTS)
+* 🎯 Personalization engine
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+
+```bash
+fork → branch → commit → pull request
+```
+
+---
+
+## 📄 License
+
+MIT License
+
+---
+
+## ⭐ Final Note
+
+This project demonstrates:
+
+* Full-stack engineering
+* AI integration
+* Real-time systems
+* Human-centered design
+
+---
+
+> Built with ❤️ to create emotionally intelligent AI companions
+>>>>>>> 1e38f3ae00b31588d42d468cbae7328590d154b7

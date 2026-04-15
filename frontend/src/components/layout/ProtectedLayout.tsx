@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import clsx from "clsx";
 import { useAuth } from "@/context/AuthContext";
 
 interface ProtectedLayoutProps {
@@ -32,7 +33,7 @@ export default function ProtectedLayout({
     const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
     if (!user && !isPublicRoute) {
-      router.push("/signup");
+      router.push("/signup", { scroll: false });
       return;
     }
 
@@ -69,13 +70,17 @@ export default function ProtectedLayout({
   const showSidebar =
     Boolean(user?.dob) && !isPublicRoute && pathname !== "/complete-dob";
 
+  const isChat = pathname.startsWith("/chat/");
+
   return (
     <div className="app-shell">
       {showSidebar && sidebar}
       <main
-        className={`app-content min-h-screen ${
-          showSidebar ? "px-4 py-4 sm:ml-72 sm:px-6 sm:py-6" : ""
-        }`}
+        className={clsx(
+          "app-content",
+          showSidebar ? "px-4 py-4 sm:ml-72 sm:px-6 sm:py-6" : "",
+          isChat ? "h-screen overflow-hidden" : "min-h-screen"
+        )}
       >
         {children}
       </main>

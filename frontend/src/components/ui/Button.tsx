@@ -47,8 +47,8 @@ export default function Button({
       {...props}
       disabled={disabled || loading}
       className={clsx(
-        "inline-flex items-center justify-center gap-2 rounded-2xl font-semibold transition duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2 focus:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-60",
-        "hover:-translate-y-0.5 active:translate-y-0",
+        "inline-flex items-center justify-center gap-2 rounded-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-2 focus:ring-offset-transparent disabled:cursor-not-allowed disabled:opacity-60",
+        "transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98]",
         sizeClasses[size],
         variantClasses[variant],
         fullWidth && "w-full",

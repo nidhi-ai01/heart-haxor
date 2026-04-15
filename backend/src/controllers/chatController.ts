@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import * as chatService from '../services/chatService.js';
 import { chatbotSettingsService } from '../services/chatbotSettingsService.js';
-import prisma from '../lib/prisma.js';
+import supabase from '../lib/supabase.js';
 
 interface AuthRequest extends Request {
   userId?: string;
@@ -52,11 +52,13 @@ export const getChatHistory = async (req: AuthRequest, res: Response) => {
         }
 
         // Fetch chat to verify ownership
-        const chat = await prisma.chat.findUnique({
-            where: { id: chatId }
-        });
+        const { data: chat, error: chatError } = await supabase
+            .from('Chat')
+            .select('*')
+            .eq('id', chatId)
+            .single();
 
-        if (!chat) {
+        if (chatError || !chat) {
             res.status(404).json({ error: 'Chat not found' });
             return;
         }
@@ -177,9 +179,12 @@ export const getAdminUserChat = async (req: AuthRequest, res: Response) => {
             return;
         }
 
-        const user = await prisma.user.findUnique({ where: { id: req.userId } });
+        const { data: user } = await supabase
+            .from('User')
+            .select('role')
+            .eq('id', req.userId)
+            .single();
         
-        // Mocking req.user.role if it's not typed
         const reqUser = { role: (user as any)?.role || 'user' };
 
         if (reqUser.role !== "admin") {

@@ -1,4 +1,8 @@
-import prisma from '../lib/prisma.js';
+import crypto from 'crypto';
+import supabase from '../lib/supabase.js';
+import type { Character, UserChatbotSettings } from '../types/database.js';
+
+const uuid = () => crypto.randomUUID();
 
 interface CharacterDataForUser {
   name: string;
@@ -16,32 +20,38 @@ export const chatbotSettingsService = {
   ): Promise<CharacterDataForUser> {
     try {
       // First try to get user's customization for this character
-      const settings = await prisma.userChatbotSettings.findUnique({
-        where: {
-          userId_characterId: {
-            userId,
-            characterId,
-          },
-        },
-        include: {
-          character: true,
-        },
-      });
+      const { data: settings } = await supabase
+        .from('UserChatbotSettings')
+        .select('*')
+        .eq('userId', userId)
+        .eq('characterId', characterId)
+        .single();
 
-      if (settings && settings.character) {
-        return {
-          name: settings.customName || settings.character.name,
-          imageUrl: settings.customImageUrl || settings.character.imageUrl,
-          isCustomized: !!(settings.customName || settings.customImageUrl),
-        };
+      if (settings) {
+        // Fetch the character separately
+        const { data: character } = await supabase
+          .from('Character')
+          .select('*')
+          .eq('id', characterId)
+          .single();
+
+        if (character) {
+          return {
+            name: settings.customName || character.name,
+            imageUrl: settings.customImageUrl || character.imageUrl,
+            isCustomized: !!(settings.customName || settings.customImageUrl),
+          };
+        }
       }
 
       // If no customization, fetch character defaults
-      const character = await prisma.character.findUnique({
-        where: { id: characterId },
-      });
+      const { data: character, error } = await supabase
+        .from('Character')
+        .select('*')
+        .eq('id', characterId)
+        .single();
 
-      if (!character) {
+      if (error || !character) {
         throw new Error('Character not found');
       }
 
@@ -56,25 +66,21 @@ export const chatbotSettingsService = {
     }
   },
 
-  /**
-   * Update or create customization for a character.
-   * Only updates fields that are explicitly provided (not undefined).
-   * Passing undefined for a field leaves the existing DB value untouched.
-   * Passing null or empty string explicitly clears that field.
-   */
+  
   async updateUserChatbotSettings(
     userId: string,
     characterId: string,
     customName?: string | null,
-    customImageUrl?: string | null
+    customImageUrl?: string | null,
+    customPersonality?: string | null
   ) {
     try {
-      // Validate custom name length
+      
       if (customName && customName.length > 50) {
         throw new Error('Custom name must be 50 characters or less');
       }
 
-      // Validate image URL format if provided
+      
       if (customImageUrl) {
         try {
           new URL(customImageUrl);
@@ -83,38 +89,81 @@ export const chatbotSettingsService = {
         }
       }
 
-      // Build update payload — only include fields that were explicitly passed
-      const updateData: Record<string, string | null> = {};
-      if (customName !== undefined) {
-        updateData.customName = customName || null;
-      }
-      if (customImageUrl !== undefined) {
-        updateData.customImageUrl = customImageUrl || null;
+      // Validate personality length
+      if (customPersonality && customPersonality.length > 300) {
+        throw new Error('Personality description must be 300 characters or less');
       }
 
-      const settings = await prisma.userChatbotSettings.upsert({
-        where: {
-          userId_characterId: {
+      // Check if setting already exists
+      const { data: existing } = await supabase
+        .from('UserChatbotSettings')
+        .select('*')
+        .eq('userId', userId)
+        .eq('characterId', characterId)
+        .single();
+
+      let settings: UserChatbotSettings;
+
+      if (existing) {
+        // Build update payload — only include fields that were explicitly passed
+        const updateData: Record<string, string | null> = {};
+        if (customName !== undefined) {
+          updateData.customName = customName || null;
+        }
+        if (customImageUrl !== undefined) {
+          updateData.customImageUrl = customImageUrl || null;
+        }
+        if (customPersonality !== undefined) {
+          updateData.customPersonality = customPersonality || null;
+        }
+
+        const { data: updated, error } = await supabase
+          .from('UserChatbotSettings')
+          .update(updateData)
+          .eq('userId', userId)
+          .eq('characterId', characterId)
+          .select('*')
+          .single();
+
+        if (error || !updated) {
+          throw new Error(error?.message || 'Failed to update settings');
+        }
+        settings = updated as UserChatbotSettings;
+      } else {
+        // Create new
+        const { data: created, error } = await supabase
+          .from('UserChatbotSettings')
+          .insert({
+            id: uuid(),
             userId,
             characterId,
-          },
-        },
-        update: updateData,
-        create: {
-          userId,
-          characterId,
-          customName: customName || null,
-          customImageUrl: customImageUrl || null,
-        },
-        include: {
-          character: true,
-        },
-      });
+            customName: customName || null,
+            customImageUrl: customImageUrl || null,
+            customPersonality: customPersonality || null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          })
+          .select('*')
+          .single();
+
+        if (error || !created) {
+          throw new Error(error?.message || 'Failed to create settings');
+        }
+        settings = created as UserChatbotSettings;
+      }
+
+      // Fetch the character for the response
+      const { data: character } = await supabase
+        .from('Character')
+        .select('*')
+        .eq('id', characterId)
+        .single();
 
       return {
         customName: settings.customName,
         customImageUrl: settings.customImageUrl,
-        character: settings.character,
+        customPersonality: settings.customPersonality,
+        character: character as Character,
       };
     } catch (error) {
       console.error('Error in updateUserChatbotSettings:', error);
@@ -127,12 +176,28 @@ export const chatbotSettingsService = {
    */
   async getUserAllCustomizations(userId: string) {
     try {
-      const customizations = await prisma.userChatbotSettings.findMany({
-        where: { userId },
-        include: { character: true },
-      });
+      const { data: customizations, error } = await supabase
+        .from('UserChatbotSettings')
+        .select('*')
+        .eq('userId', userId);
 
-      return customizations;
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Fetch characters for each customization
+      const enriched = await Promise.all(
+        (customizations || []).map(async (c) => {
+          const { data: character } = await supabase
+            .from('Character')
+            .select('*')
+            .eq('id', c.characterId)
+            .single();
+          return { ...c, character: character as Character };
+        })
+      );
+
+      return enriched;
     } catch (error) {
       console.error('Error in getUserAllCustomizations:', error);
       throw error;
@@ -144,14 +209,15 @@ export const chatbotSettingsService = {
    */
   async deleteUserChatbotSetting(userId: string, characterId: string) {
     try {
-      await prisma.userChatbotSettings.delete({
-        where: {
-          userId_characterId: {
-            userId,
-            characterId,
-          },
-        },
-      });
+      const { error } = await supabase
+        .from('UserChatbotSettings')
+        .delete()
+        .eq('userId', userId)
+        .eq('characterId', characterId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
 
       return { success: true, message: 'Customization deleted' };
     } catch (error) {
@@ -165,29 +231,30 @@ export const chatbotSettingsService = {
    */
   async getCharacterWithUserSettings(userId: string, characterId: string) {
     try {
-      const character = await prisma.character.findUnique({
-        where: { id: characterId },
-      });
+      const { data: character, error } = await supabase
+        .from('Character')
+        .select('*')
+        .eq('id', characterId)
+        .single();
 
-      if (!character) {
+      if (error || !character) {
         throw new Error('Character not found');
       }
 
-      const customization = await prisma.userChatbotSettings.findUnique({
-        where: {
-          userId_characterId: {
-            userId,
-            characterId,
-          },
-        },
-      });
+      const { data: customization } = await supabase
+        .from('UserChatbotSettings')
+        .select('*')
+        .eq('userId', userId)
+        .eq('characterId', characterId)
+        .single();
 
       return {
         ...character,
         name: customization?.customName || character.name,
         imageUrl: customization?.customImageUrl || character.imageUrl,
+        customPersonality: customization?.customPersonality || null,
         isCustomized: !!(
-          customization?.customName || customization?.customImageUrl
+          customization?.customName || customization?.customImageUrl || customization?.customPersonality
         ),
       };
     } catch (error) {

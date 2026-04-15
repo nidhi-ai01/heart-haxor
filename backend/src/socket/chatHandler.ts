@@ -40,18 +40,21 @@ export const registerChatHandlers = (io: Server, socket: Socket) => {
             // 3. Build Context for LLM
             const history = await chatService.getChatHistory(chat.id);
             
-            // Use custom name if provided, otherwise fetch it
+            // Fetch user customizations (name + personality)
             let displayName = customName || chat.character.name;
-            if (!customName) {
-                try {
-                    const customData = await chatbotSettingsService.getCharacterWithUserSettings(userId, characterId);
-                    displayName = customData.name;
-                } catch (err) {
-                    // Use default
-                }
+            let customPersonality: string | null = null;
+
+            try {
+                const customData = await chatbotSettingsService.getCharacterWithUserSettings(userId, characterId);
+                displayName = customData.name;
+                customPersonality = customData.customPersonality || null;
+            } catch {
+                // Use defaults
             }
             
-            const systemPrompt = buildSystemPrompt(chat.character, displayName);
+            const systemPrompt = buildSystemPrompt(chat.character, displayName, customPersonality);
+
+            console.log(`[Chat] Building prompt for ${displayName}${customPersonality ? ` (custom personality: "${customPersonality.slice(0, 50)}...")` : ''}`);
 
             const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
                 { role: 'system', content: systemPrompt },

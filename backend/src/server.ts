@@ -19,19 +19,43 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 
-const allowedOrigins = [
-  'http://localhost:3000',
+
+const allowedProductionDomains = [
   'https://hearthaxor.com',
-  'https://www.hearthaxor.com',
-  'https://heart-haxor-git-main-nidhis-projects-cdd74adb.vercel.app',
+  'https://www.hearthaxor.com'
 ];
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
+
+const isOriginAllowed = (origin: string | undefined): boolean => {
+  if (!origin) return true;
+
+ 
+  // This prevents spoofing like "http://localhost.malicious.com"
+  const localhostRegex = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+  if (localhostRegex.test(origin)) return true;
+
+  if (allowedProductionDomains.includes(origin)) return true;
+
+
+  if (origin.endsWith('.vercel.app')) return true;
+
+  // If nothing matches, block it
+  return false;
+};
+
+//  Define Express CORS options
+const corsOptions = {
+  origin: (origin: string | undefined, callback: Function) => {
+    if (isOriginAllowed(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS Error: Origin ${origin} not allowed`));
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
@@ -47,14 +71,21 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST'],
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS Error: Origin ${origin} not allowed`));
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
   },
 });
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
+
   registerChatHandlers(io, socket);
   registerVoiceHandlers(io, socket);
 
@@ -74,6 +105,7 @@ let attempts = 0;
 
 function startListen() {
   attempts += 1;
+
   if (attempts > maxAttempts) {
     console.error(
       `[startup] Could not bind after ${maxAttempts} tries (from port ${preferredPort}). Free a port or set PORT in .env.`
@@ -83,6 +115,7 @@ function startListen() {
 
   const onError = (err: NodeJS.ErrnoException) => {
     server.removeListener('error', onError);
+
     if (err.code === 'EADDRINUSE') {
       console.warn(`[startup] Port ${listenPort} is already in use, trying ${listenPort + 1}...`);
       listenPort += 1;
@@ -97,10 +130,12 @@ function startListen() {
 
   server.listen(listenPort, () => {
     server.removeListener('error', onError);
+
     console.log(`Heart Haxor Backend running on port ${listenPort}`);
+
     if (listenPort !== preferredPort) {
       console.warn(
-        `[startup] Configured PORT was ${preferredPort}; using ${listenPort} instead. Update NEXT_PUBLIC_API_URL on the frontend if needed.`
+        `[startup] Configured PORT was ${preferredPort}; using ${listenPort} instead. Update frontend API URL if needed.`
       );
     }
   });

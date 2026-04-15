@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:18-alpine
 
 WORKDIR /app
 
@@ -7,9 +7,6 @@ RUN npm install
 
 COPY . .
 
-RUN npx prisma generate
-RUN npm run build
+EXPOSE 3001
 
-EXPOSE 10000
-
-CMD sh -c "npx prisma db push && npm run seed && npm start"
+CMD ["npm", "start"]

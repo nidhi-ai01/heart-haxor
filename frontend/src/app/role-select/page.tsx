@@ -22,7 +22,7 @@ export default function RoleSelect() {
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
-      router.push("/login");
+      router.push("/login", { scroll: false });
       return;
     }
     setIsAdult(Boolean(user.isAdult));
@@ -37,7 +37,7 @@ export default function RoleSelect() {
     localStorage.setItem("selectedRole", selected);
     localStorage.setItem("role", selected);
     showSuccess("Role selected. Taking you to characters...");
-    setTimeout(() => router.push("/characters"), 500);
+    setTimeout(() => router.push("/characters", { scroll: false }), 500);
   };
 
   if (isLoading) {
@@ -114,12 +114,13 @@ export default function RoleSelect() {
                     onClick={() => !isDisabled && setSelected(role.id)}
                     disabled={isDisabled}
                     className={clsx(
-                      "w-full text-left p-6 rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden group min-h-[220px] flex flex-col items-center text-center",
+                      "w-full text-left p-6 rounded-[2rem] border-2 transition-all duration-300 relative overflow-hidden group min-h-[220px] flex flex-col items-center text-center ease-in-out",
+                      !isDisabled && "hover:scale-[1.02] active:scale-[0.98]",
                       isDisabled
                         ? "cursor-not-allowed opacity-60 bg-slate-50 border-slate-200 dark:bg-white/5 dark:border-white/5"
                         : isSelected
-                        ? "border-blue-500 bg-blue-50/50 shadow-[0_0_30px_rgba(59,130,246,0.2)] dark:border-blue-400 dark:bg-blue-900/20"
-                        : "border-transparent bg-white hover:-translate-y-2 hover:shadow-[0_0_25px_rgba(59,130,246,0.15)] hover:border-blue-200 dark:bg-white/5 dark:hover:border-blue-400/30"
+                        ? "border-blue-500 bg-blue-50/50 shadow-[0_4px_30px_rgba(59,130,246,0.3)] dark:border-blue-400 dark:bg-blue-900/30"
+                        : "border-transparent bg-white hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] hover:border-blue-200/50 dark:bg-white/5 dark:hover:border-blue-400/30"
                     )}
                   >
                     {/* Subtle glow background for selected state */}

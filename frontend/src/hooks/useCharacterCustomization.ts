@@ -19,6 +19,7 @@ interface Character {
 export const useCharacterCustomization = (characterId: string) => {
   const [customName, setCustomName] = useState<string>("");
   const [customImageUrl, setCustomImageUrl] = useState<string>("");
+  const [customPersonality, setCustomPersonality] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { showSuccess, showError } = useToast();
@@ -38,12 +39,14 @@ export const useCharacterCustomization = (characterId: string) => {
       if (response.data) {
         setCustomName(response.data.customName || "");
         setCustomImageUrl(response.data.customImageUrl || "");
+        setCustomPersonality(response.data.customPersonality || "");
       }
     } catch (err: any) {
       // 404 is expected when no customization exists yet - this is not an error
       if (err.response?.status === 404) {
         setCustomName("");
         setCustomImageUrl("");
+        setCustomPersonality("");
         setError(null);
         return;
       }
@@ -59,7 +62,7 @@ export const useCharacterCustomization = (characterId: string) => {
    * Update or create customization for a character
    */
   const updateSettings = useCallback(
-    async (data: { customName?: string; customImageUrl?: string }) => {
+    async (data: { customName?: string; customImageUrl?: string; customPersonality?: string }) => {
       if (!characterId) {
         showError("Character ID is required");
         return;
@@ -72,11 +75,13 @@ export const useCharacterCustomization = (characterId: string) => {
         const response = await apiClient.put(`/chatbot-settings/${characterId}`, {
           customName: data.customName || null,
           customImageUrl: data.customImageUrl || null,
+          customPersonality: data.customPersonality || null,
         });
 
         if (response.data) {
           setCustomName(response.data.customName || "");
           setCustomImageUrl(response.data.customImageUrl || "");
+          setCustomPersonality(response.data.customPersonality || "");
           showSuccess("Customization saved successfully!");
         }
       } catch (err: any) {
@@ -107,6 +112,7 @@ export const useCharacterCustomization = (characterId: string) => {
 
       setCustomName("");
       setCustomImageUrl("");
+      setCustomPersonality("");
       showSuccess("Reset to default character settings");
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || "Failed to reset customization";
@@ -134,11 +140,12 @@ export const useCharacterCustomization = (characterId: string) => {
   /**
    * Check if character has customizations
    */
-  const isCustomized = Boolean(customName || customImageUrl);
+  const isCustomized = Boolean(customName || customImageUrl || customPersonality);
 
   return {
     customName,
     customImageUrl,
+    customPersonality,
     isLoading,
     error,
     isCustomized,
@@ -148,5 +155,6 @@ export const useCharacterCustomization = (characterId: string) => {
     getCharacterDisplay,
     setCustomName,
     setCustomImageUrl,
+    setCustomPersonality,
   };
 };

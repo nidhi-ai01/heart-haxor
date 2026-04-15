@@ -25,9 +25,9 @@ export default function Login() {
 
   const postLoginRoute = (hasDob: boolean) => {
     if (hasDob) {
-      router.push("/role-select");
+      router.push("/role-select", { scroll: false });
     } else {
-      router.push("/complete-dob");
+      router.push("/complete-dob", { scroll: false });
     }
   };
 
@@ -102,11 +102,11 @@ export default function Login() {
   }
 
   return (
-    <main className="app-shell flex min-h-screen items-center justify-center p-4">
-      <div className="app-content w-full max-w-5xl">
-        <Card className="overflow-hidden">
-          <div className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr]">
-            <section className="hidden rounded-[1.75rem] bg-slate-950 p-8 text-white md:block">
+    <main className="app-shell flex h-screen overflow-hidden items-center justify-center p-4">
+      <div className="app-content w-full max-w-5xl h-[95vh] md:h-[90vh] flex flex-col">
+        <Card className="h-full w-full overflow-hidden !p-0 flex flex-col relative">
+          <div className="flex flex-col lg:flex-row h-full overflow-hidden">
+            <section className="hidden lg:flex flex-col lg:w-5/12 bg-slate-950 p-8 text-white h-full overflow-hidden shrink-0">
               <p className="app-eyebrow text-blue-200">Sign in</p>
               <h1 className="mt-4 text-4xl font-extrabold leading-tight">
                 Return to your safe companion space.
@@ -132,8 +132,9 @@ export default function Login() {
               </div>
             </section>
 
-            <section className="flex flex-col justify-center">
-              <div className="mb-8 md:hidden">
+            <section className="flex flex-col justify-between h-full overflow-y-auto w-full lg:w-7/12 p-6 md:p-8">
+              <div className="pb-4">
+                <div className="mb-8 md:hidden">
                 <p className="app-eyebrow text-blue-600 dark:text-blue-300">Sign in</p>
                 <h2 className="mt-3 text-2xl font-extrabold text-slate-900 dark:text-slate-100">
                   Return to your safe companion space
@@ -214,16 +215,20 @@ export default function Login() {
                 No judgment. No pressure. Not a crisis service—for emotional companionship only.
               </p>
 
-              <p className="mt-8 text-sm text-slate-600 dark:text-slate-400">
-                Need an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => router.push("/signup")}
-                  className="font-semibold text-blue-700 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
-                >
-                  Create one
-                </button>
-              </p>
+              </div>
+
+              <div className="shrink-0 border-t border-slate-200/50 pt-4 dark:border-white/5">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Need an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => router.push("/signup", { scroll: false })}
+                    className="font-semibold text-blue-700 hover:text-blue-800 transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98] dark:text-blue-300 dark:hover:text-blue-200 inline-block"
+                  >
+                    Create one
+                  </button>
+                </p>
+              </div>
             </section>
           </div>
         </Card>

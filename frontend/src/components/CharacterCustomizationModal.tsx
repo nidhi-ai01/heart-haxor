@@ -28,12 +28,14 @@ export default function CharacterCustomizationModal({
   const {
     customName,
     customImageUrl,
+    customPersonality,
     isLoading,
     fetchSettings,
     updateSettings,
     resetToDefaults,
     setCustomName,
     setCustomImageUrl,
+    setCustomPersonality,
   } = useCharacterCustomization(characterId);
 
   const [previewImage, setPreviewImage] = useState(characterImage);
@@ -47,6 +49,7 @@ export default function CharacterCustomizationModal({
   // Track original values to detect changes
   const [originalName, setOriginalName] = useState("");
   const [originalImage, setOriginalImage] = useState("");
+  const [originalPersonality, setOriginalPersonality] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -59,6 +62,7 @@ export default function CharacterCustomizationModal({
     if (isOpen) {
       setOriginalName(customName);
       setOriginalImage(customImageUrl);
+      setOriginalPersonality(customPersonality);
       setPreviewImage(customImageUrl || characterImage);
     }
     // Intentional: only snapshot when modal opens or data first loads
@@ -66,7 +70,7 @@ export default function CharacterCustomizationModal({
   }, [isOpen, isLoading]);
 
   const hasChanges =
-    customName !== originalName || customImageUrl !== originalImage;
+    customName !== originalName || customImageUrl !== originalImage || customPersonality !== originalPersonality;
 
   const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
@@ -181,10 +185,12 @@ export default function CharacterCustomizationModal({
       await updateSettings({
         customName: customName || undefined,
         customImageUrl: customImageUrl || undefined,
+        customPersonality: customPersonality || undefined,
       });
       // Update originals so hasChanges resets
       setOriginalName(customName);
       setOriginalImage(customImageUrl);
+      setOriginalPersonality(customPersonality);
       onSaved?.();
       setTimeout(() => onClose(), 400);
     } finally {
@@ -198,15 +204,16 @@ export default function CharacterCustomizationModal({
     setShowResetConfirm(false);
     setOriginalName("");
     setOriginalImage("");
+    setOriginalPersonality("");
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-      <Card className="w-full max-w-3xl">
+      <Card className="flex w-full max-w-3xl flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 border-b border-slate-200/70 pb-5 dark:border-white/10">
+        <div className="shrink-0 flex items-start justify-between gap-4 border-b border-slate-200/70 pb-5 dark:border-white/10">
           <div>
             <p className="app-eyebrow">Character settings</p>
             <h2 className="mt-3 text-2xl font-extrabold text-slate-900 dark:text-slate-100">
@@ -226,7 +233,7 @@ export default function CharacterCustomizationModal({
         </div>
 
         {/* Body — 2-column */}
-        <div className="mt-6 grid gap-8 lg:grid-cols-[280px_1fr]">
+        <div className="mt-6 grid min-h-0 gap-8 overflow-y-auto pr-2 lg:grid-cols-[280px_1fr]">
           {/* Left: Preview Panel */}
           <div className="rounded-[1.75rem] bg-slate-950 p-5 text-white">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-200">
@@ -342,6 +349,36 @@ export default function CharacterCustomizationModal({
               />
             </div>
 
+            {/* Personality Description Section */}
+            <div>
+              <div className="mb-3 flex items-center justify-between">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Personality Description
+                </label>
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  {customPersonality.length}/300
+                </span>
+              </div>
+              <textarea
+                value={customPersonality}
+                onChange={(e) => setCustomPersonality(e.target.value.slice(0, 300))}
+                disabled={isLoading || isUploading}
+                placeholder="Describe how this companion should behave... (e.g. strict coach, funny friend, calm therapist)"
+                rows={3}
+                className={clsx(
+                  "w-full resize-none rounded-2xl border px-4 py-3 text-sm leading-relaxed transition-colors duration-200",
+                  "placeholder:text-slate-400 dark:placeholder:text-slate-500",
+                  "bg-white/60 text-slate-900 dark:bg-white/5 dark:text-slate-100",
+                  "border-slate-200 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20",
+                  "dark:border-white/10 dark:focus:border-blue-400/50 dark:focus:ring-blue-400/10",
+                  "disabled:cursor-not-allowed disabled:opacity-50"
+                )}
+              />
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                This shapes how the AI responds. Leave blank to use the character's default personality.
+              </p>
+            </div>
+
             {/* Reset Confirmation */}
             {showResetConfirm && (
               <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
@@ -376,7 +413,7 @@ export default function CharacterCustomizationModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-8 flex flex-col gap-3 border-t border-slate-200/70 pt-5 dark:border-white/10 sm:flex-row">
+        <div className="shrink-0 mt-8 flex flex-col gap-3 border-t border-slate-200/70 pt-5 dark:border-white/10 sm:flex-row">
           <Button
             onClick={handleSave}
             disabled={isLoading || isUploading || isSaving || !hasChanges}

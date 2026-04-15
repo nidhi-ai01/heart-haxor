@@ -23,15 +23,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${manrope.className} min-h-screen antialiased`}>
-        <ThemeProvider>
-          <AuthProvider>
-            <ToastProvider>
-              <ProtectedLayout sidebar={<Sidebar />}>{children}</ProtectedLayout>
-              <ToastContainer />
-            </ToastProvider>
-          </AuthProvider>
-        </ThemeProvider>
+      <body className={`${manrope.className} relative h-screen overflow-hidden antialiased`}>
+        {/* Background is styled on body, this wrapper scrolls independently! */}
+        <div className="h-full overflow-y-auto">
+          <ThemeProvider>
+            <AuthProvider>
+              <ToastProvider>
+                <ProtectedLayout sidebar={<Sidebar />}>{children}</ProtectedLayout>
+                <ToastContainer />
+              </ToastProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </div>
       </body>
     </html>
   );

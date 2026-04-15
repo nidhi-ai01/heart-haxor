@@ -29,9 +29,9 @@ export default function Card({
     <div
       {...props}
       className={clsx(
-        "p-6 md:p-8 transition duration-300",
+        "p-6 md:p-8 transition-all duration-300 ease-in-out",
         variantClasses[variant],
-        hoverable && "hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(15,23,42,0.12)]",
+        hoverable && "hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_24px_60px_rgba(15,23,42,0.12)]",
         className
       )}
     >

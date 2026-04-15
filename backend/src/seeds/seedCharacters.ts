@@ -1,6 +1,22 @@
-import { PrismaClient } from '@prisma/client';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const prisma = new PrismaClient();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { autoRefreshToken: false, persistSession: false },
+});
 
 const defaultCharacters = [
   // Friend Characters (3)
@@ -107,20 +123,31 @@ async function seedDatabase() {
   try {
     console.log("🌱 Starting database seed...");
 
-    const existingCharacters = await prisma.character.findMany({
-      where: { isSystem: true }
-    });
-    
-    const existingNames = new Set(existingCharacters.map(c => c.name));
+    // Fetch existing system characters
+    const { data: existingCharacters, error: fetchError } = await supabase
+      .from('Character')
+      .select('name')
+      .eq('isSystem', true);
+
+    if (fetchError) {
+      throw new Error(`Failed to fetch existing characters: ${fetchError.message}`);
+    }
+
+    const existingNames = new Set((existingCharacters || []).map(c => c.name));
     let addedCount = 0;
 
     for (const character of defaultCharacters) {
       if (!existingNames.has(character.name)) {
-        await prisma.character.create({
-          data: character,
-        });
-        console.log(`+ Created character: ${character.name}`);
-        addedCount++;
+        const { error } = await supabase
+          .from('Character')
+          .insert(character);
+
+        if (error) {
+          console.error(`✗ Failed to create ${character.name}:`, error.message);
+        } else {
+          console.log(`+ Created character: ${character.name}`);
+          addedCount++;
+        }
       } else {
         console.log(`- Character ${character.name} already exists. Skipping.`);
       }
@@ -132,8 +159,6 @@ async function seedDatabase() {
   } catch (error) {
     console.error("Error seeding database:", error);
     process.exit(1);
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

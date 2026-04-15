@@ -70,7 +70,7 @@ export default function ChatIntro() {
                 <MessageCircle className="h-4 w-4" />
                 {isLoading ? "Opening chat" : "Start talking"}
               </Button>
-              <Button onClick={() => router.push("/characters")} variant="outline" fullWidth size="lg">
+              <Button onClick={() => router.push("/characters", { scroll: false })} variant="outline" fullWidth size="lg">
                 Browse characters
                 <ChevronRight className="h-4 w-4" />
               </Button>

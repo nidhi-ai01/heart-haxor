@@ -77,7 +77,7 @@ export const updateChatbotSettings = async (
 ): Promise<void> => {
   try {
     const { characterId } = req.params;
-    const { customName, customImageUrl } = req.body;
+    const { customName, customImageUrl, customPersonality } = req.body;
     const userId = req.userId;
 
     if (!userId) {
@@ -105,18 +105,29 @@ export const updateChatbotSettings = async (
       return;
     }
 
+    if (
+      customPersonality !== undefined &&
+      customPersonality !== null &&
+      typeof customPersonality !== 'string'
+    ) {
+      res.status(400).json({ error: 'Custom personality must be a string' });
+      return;
+    }
+
     const result = await chatbotSettingsService.updateUserChatbotSettings(
       userId,
       characterId,
       // Only pass the field if it was explicitly in the request body
       'customName' in req.body ? customName : undefined,
       'customImageUrl' in req.body ? customImageUrl : undefined,
+      'customPersonality' in req.body ? customPersonality : undefined,
     );
 
     res.json({
       success: true,
       customName: result.customName,
       customImageUrl: result.customImageUrl,
+      customPersonality: result.customPersonality,
     });
   } catch (error: any) {
     console.error('Error in updateChatbotSettings:', error);
