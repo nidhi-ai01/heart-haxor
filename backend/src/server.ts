@@ -98,24 +98,8 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', service: 'Heart Haxor Backend' });
 });
 
-const preferredPort = Number(process.env.PORT) || 10000;
-const maxAttempts = 20;
-let listenPort = preferredPort;
-let attempts = 0;
-
-function startListen() {
-  attempts += 1;
-
-  if (attempts > maxAttempts) {
-    console.error(
-      `[startup] Could not bind after ${maxAttempts} tries (from port ${preferredPort}). Free a port or set PORT in .env.`
-    );
-    process.exit(1);
-  }
-
-  const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
+const PORT = Number(process.env.PORT) || 5000;
 
 server.listen(PORT, () => {
   console.log(`Heart Haxor Backend running on port ${PORT}`);
 });
-  
