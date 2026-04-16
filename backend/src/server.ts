@@ -113,32 +113,9 @@ function startListen() {
     process.exit(1);
   }
 
-  const onError = (err: NodeJS.ErrnoException) => {
-    server.removeListener('error', onError);
+  const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
 
-    if (err.code === 'EADDRINUSE') {
-      console.warn(`[startup] Port ${listenPort} is already in use, trying ${listenPort + 1}...`);
-      listenPort += 1;
-      startListen();
-    } else {
-      console.error('[startup] Server error:', err);
-      process.exit(1);
-    }
-  };
-
-  server.once('error', onError);
-
-  server.listen(listenPort, () => {
-    server.removeListener('error', onError);
-
-    console.log(`Heart Haxor Backend running on port ${listenPort}`);
-
-    if (listenPort !== preferredPort) {
-      console.warn(
-        `[startup] Configured PORT was ${preferredPort}; using ${listenPort} instead. Update frontend API URL if needed.`
-      );
-    }
-  });
-}
-
-startListen();
+server.listen(PORT, () => {
+  console.log(`Heart Haxor Backend running on port ${PORT}`);
+});
+  
